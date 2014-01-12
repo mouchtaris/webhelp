@@ -1,8 +1,12 @@
 module Webhelp
 
-class RcMapper < BasicObject
+module RcMapper
 
-  def initialize yaml_db_file_path = 'rc.yaml'
+  def initialize *args, &block
+    super
+  end
+
+  def initialize_rc_mapper yaml_db_file_path = 'rc.yaml'
     @yaml_db_file_path = yaml_db_file_path.to_s.freeze
     reload!
   end
