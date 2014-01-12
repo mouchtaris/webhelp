@@ -2,7 +2,7 @@ module Webhelp
 
 class Image < BasicObject
 
-  def initialize rc = Webhelp::RcMapper.new
+  def initialize rc = ::Webhelp::RcMapper.new
     @rc = rc
   end
   attr_accessor :scope
