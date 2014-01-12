@@ -1,11 +1,10 @@
 module Webhelp
 
 class SimpleRcMapper < BasicObject
-  include RcMapper
+  include ::Webhelp::RcMapper
 
   def initialize yaml_db_pathname = nil
-    super()
-    initialize_rc_mapper yaml_db_pathname
+    super
   end
 
 end

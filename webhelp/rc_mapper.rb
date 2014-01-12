@@ -2,12 +2,10 @@ module Webhelp
 
 module RcMapper
 
-  def initialize *args, &block
-    super
-  end
+  DefaultYamlDbPathname = 'rc.yaml'
 
-  def initialize_rc_mapper yaml_db_file_path = 'rc.yaml'
-    @yaml_db_file_path = yaml_db_file_path.to_s.freeze
+  def initialize yaml_db_file_path = DefaultYamlDbPathname
+    @yaml_db_file_path = (yaml_db_file_path || DefaultYamlDbPathname).to_s.freeze
     reload!
   end
 
