@@ -27,20 +27,20 @@ class RcWuala
   #
   # @param original_mapper [Webhelp::RcMapper] the original mapper (not wrapped)
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
-  # @param local_root [String, Pathname] the root of the local wuala storage
-  def initialize original_mapper, mapper, local_root
+  # @param local_serve [Bool] serve wuala files locally
+  def initialize original_mapper, mapper, local_serve
     initialize_rc_wrapper_base mapper
     @original = original_mapper
-    @wualal = Pathname local_root if local_root
+    @local_serve = local_serve
   end
 
   def translate name
     original = URI @original.translate name
     if original.scheme == 'wuala'
       then
-        if @wualal
+        if @local_serve
           then
-            @wualal + ".#{original.path}"
+            "/wuala#{original.path}"
           else
             "https://content.wuala.com/contents/#{
               original.user}/public#{
