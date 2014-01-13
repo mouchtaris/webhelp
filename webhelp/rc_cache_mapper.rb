@@ -16,6 +16,10 @@ class RcCacheMapper
     "#{id}#{path.extname}"
   end
 
+  def each_name &block
+    @rc.each_name &block
+  end
+
 end
 
 end

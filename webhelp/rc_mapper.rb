@@ -20,8 +20,8 @@ class RcMapper
     result
   end
 
-  def each &block
-    @map.each &block
+  def each_name &block
+    @map.each_value &block
   end
 
   private
