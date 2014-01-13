@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Webhelp
 
 class RcMapper
@@ -16,6 +18,10 @@ class RcMapper
       ::Kernel.raise "Rc not found: #{name}" unless result
     end
     result
+  end
+
+  def each &block
+    @map.each &block
   end
 
   private
