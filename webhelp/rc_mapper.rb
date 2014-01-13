@@ -1,6 +1,6 @@
 module Webhelp
 
-module RcMapper
+class RcMapper
 
   DefaultYamlDbPathname = 'rc.yaml'
 
@@ -9,7 +9,7 @@ module RcMapper
     reload!
   end
 
-  def method_missing name
+  def translate name
     unless result = @map[name.to_s] then
       reload!
       result = @map[name.to_s]
@@ -17,8 +17,6 @@ module RcMapper
     end
     result
   end
-
-  alias send method_missing
 
   private
   def reload!
