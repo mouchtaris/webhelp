@@ -1,0 +1,3 @@
+[submodule "vendor/rubylib"]
+	path = vendor/rubylib
+	url = https://github.com/mouchtaris/rubylib.git
