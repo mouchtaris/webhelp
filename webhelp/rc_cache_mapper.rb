@@ -1,23 +1,18 @@
 module Webhelp
 
 class RcCacheMapper
-  include ArgumentChecking
+  include Webhelp::RcWrapperBase
 
   # @param mapper [Webhelp::RcMapper]
   def initialize mapper
-    require_type(Webhelp::RcMapper){:mapper}
-    @rc = mapper
+    initialize_rc_wrapper_base mapper
   end
 
   def translate name
-    uri = URI @rc.translate name
+    uri = URI @mapper.translate name
     id = Digest::MD5.hexdigest uri.to_s
     path = Pathname uri.path
     "#{id}#{path.extname}"
-  end
-
-  def each_name &block
-    @rc.each_name &block
   end
 
 end

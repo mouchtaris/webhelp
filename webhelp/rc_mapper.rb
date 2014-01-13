@@ -5,11 +5,10 @@ module Webhelp
 class RcMapper
   include Util::ReloadingMapper
 
-  DefaultYamlDbPathname = 'rc.yaml'
-
-  def initialize yaml_db_file_path = DefaultYamlDbPathname
+  # @param db_or_path [Hash, String] the database file path or the database itself as a Hash
+  def initialize db_or_path
     super()
-    initialize_reloading_mapper (yaml_db_file_path || DefaultYamlDbPathname)
+    initialize_reloading_mapper db_or_path
   end
 
   alias translate []
