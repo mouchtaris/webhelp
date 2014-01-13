@@ -1,6 +1,6 @@
 module Webhelp
 
-class Image < BasicObject
+class RcImage < BasicObject
 
   # @param mapper [Webhelp::RcMapper]
   def initialize mapper
