@@ -19,6 +19,10 @@ module RcWrapperBase
     @mapper.each_name &block
   end
 
+  def each &block
+    @mapper.each &block
+  end
+
 end
 
 end

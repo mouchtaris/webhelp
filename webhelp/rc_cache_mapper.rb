@@ -1,3 +1,5 @@
+require 'digest/md5'
+
 module Webhelp
 
 class RcCacheMapper
