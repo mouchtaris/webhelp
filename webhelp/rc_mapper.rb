@@ -5,10 +5,10 @@ module Webhelp
 class RcMapper
   include Util::ReloadingMapper
 
-  # @param db_or_path [Hash, String] the database file path or the database itself as a Hash
-  def initialize db_or_path
+  # see {Util::ReloadingMapper#initialize_reloading_mapper}
+  def initialize *dbs
     super()
-    initialize_reloading_mapper db_or_path
+    initialize_reloading_mapper *dbs
   end
 
   alias translate []
