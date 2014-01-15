@@ -17,37 +17,20 @@ module Webhelp
 class RcWuala
   include Webhelp::RcWrapperBase
 
-  # The _original_mapper_ is required because
-  # it holds information about which resources are
-  # wuala-hanlded and which not.
-  #
-  # After this decision is made, the request is
-  # forwarded (if it must) to _mapper_, which could
-  # possibly be wrapped.
-  #
-  # @param original_mapper [Webhelp::RcMapper] the original mapper (not wrapped)
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
-  # @param local_serve [Bool] serve wuala files locally
-  def initialize original_mapper, mapper, local_serve
+  def initialize mapper
     initialize_rc_wrapper_base mapper
-    @original = original_mapper
-    @local_serve = local_serve
   end
 
   def translate name
-    original = URI @original.translate name
+    original = URI @mapper.translate name
     if original.scheme == 'wuala'
       then
-        if @local_serve
-          then
-            "/wuala#{original.path}"
-          else
-            "https://content.wuala.com/contents/#{
-              original.user}/public#{
-              original.path}"
-        end
+        "https://content.wuala.com/contents/#{
+          original.user}/public#{
+          original.path}"
       else
-        @mapper.translate name
+        original
     end
   end
 
