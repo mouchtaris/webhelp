@@ -1,5 +1,6 @@
-$:.unshift(File.dirname(__FILE__) + '/vendor/rubylib')
-require 'util'
+require_relative 'vendor/rubylib/util'
+
+$:.unshift __dir__
 
 module Webhelp
   extend AutoLoader
