@@ -7,7 +7,6 @@ class RcMapper
 
   # see {Util::ReloadingMapper#initialize_reloading_mapper}
   def initialize *dbs
-    super()
     initialize_reloading_mapper *dbs
   end
 
