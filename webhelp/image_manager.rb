@@ -39,13 +39,15 @@ class ImageManager
 
   # @param name [String, Symbol] the name of the image resource.
   def img name
-    ensure_is_image{}
+    ensure_is_image name
     @mapper.translate name
   end
 
   def thumb name, width, height
     ensure_is_image name
-    @mapper.translate "thumb_#{name}_#{width}x#{height}"
+    width ||= 0
+    height ||= 0
+    "/thumb/#{width}/#{height}/#{@mapper.translate name}"
   end
 
   def dimensions name
