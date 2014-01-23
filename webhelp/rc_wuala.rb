@@ -1,5 +1,4 @@
 require 'uri'
-require 'pathname'
 
 module Webhelp
 
@@ -11,11 +10,10 @@ module Webhelp
 # begin with the <wuala://> scheme. Otherwise
 # they are forwarded to the wrapped mapper.
 #
-# The wuala username must be provided upon
-# construction.
 
 class RcWuala
   include Webhelp::RcWrapperBase
+  extend ::ArgumentChecking
 
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
   def initialize mapper
@@ -25,12 +23,9 @@ class RcWuala
   def translate name
     original = URI @mapper.translate name
     if original.scheme == 'wuala'
-      then
-        "https://content.wuala.com/contents/#{
-          original.user}/public#{
-          original.path}"
-      else
-        original
+      then "https://content.wuala.com/contents/#{
+              original.user}/public#{original.path}"
+      else original
     end
   end
 
