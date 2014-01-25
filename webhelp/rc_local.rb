@@ -10,9 +10,13 @@ class RcLocal
     @sha = Digest::SHA512.new
   end
 
-  def translate name
+  def translate(name, no_local: nil)
     original = URI @mapper.translate name
-    (@sha.hexdigest original.to_s) + File.extname(original.path)
+    if no_local
+      then  original
+      else  @sha.hexdigest(original.to_s) +
+            File.extname(original.path)
+    end
   end
 
   alias translate_local translate

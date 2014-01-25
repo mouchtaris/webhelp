@@ -20,7 +20,7 @@ class RcWuala
     initialize_rc_wrapper_base mapper
   end
 
-  def translate name
+  def translate(name, no_local: nil)
     original = URI @mapper.translate name
     if original.scheme == 'wuala'
       then "https://content.wuala.com/contents/#{
