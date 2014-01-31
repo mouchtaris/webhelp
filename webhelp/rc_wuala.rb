@@ -25,7 +25,7 @@ class RcWuala
 
   def translate_impl name
     original = URI map name
-    if original.scheme.downcase == 'wuala' then
+    if original.scheme and original.scheme.downcase == 'wuala' then
       "https://content.wuala.com/contents/#{
         original.user}#{original.path}"
     end

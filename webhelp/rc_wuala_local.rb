@@ -24,7 +24,7 @@ class RcWualaLocal
 
   def translate_impl name
     original = URI map name
-    if original.scheme.downcase == 'wuala'
+    if original.scheme and original.scheme.downcase == 'wuala'
       url = url_for original
       sig = signature_for original
       update_db sig, url
