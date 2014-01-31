@@ -23,7 +23,7 @@ class WualaRcDb
     require_string{:prefix}
 
     yloader     = new_yaml_loader
-    @db         = yloader.reload || {}
+    @db         = yloader.reload
     @by_url     = Hash[ @db.map do |k, v| [v, k] end ]
     @local_root = local_root
     @username   = username
