@@ -27,7 +27,7 @@ class RcWuala
     original = URI map name
     if original.scheme.downcase == 'wuala' then
       "https://content.wuala.com/contents/#{
-        original.user}/public#{original.path}"
+        original.user}#{original.path}"
     end
   end
 
