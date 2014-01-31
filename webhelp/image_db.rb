@@ -10,13 +10,13 @@ class ImageDb
 
   private \
     def new_yaml_loader
-      FileUtils::Verbose.touch Path unless File.file? Path 
-      Class.new do
+      FileUtils::Verbose.touch Path unless File.file? Path
+      Class.new {
         include Util::YamlLoader
         def initialize
           initialize_yaml_loader Path
         end
-      end.new
+      }.new
     end
 
   def initialize
