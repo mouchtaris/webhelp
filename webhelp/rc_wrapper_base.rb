@@ -11,16 +11,34 @@ module RcWrapperBase
   end
 
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
-  def initialize_rc_wrapper_base mapper
-    @mapper = mapper
+  def initialize_rc_wrapper_base mapper, next_wrapper
+    @mapper       = mapper
+    @next_wrapper = next_wrapper
   end
 
   def each_name &block
     @mapper.each_name &block
   end
 
-  def each &block
-    @mapper.each &block
+  def translate name
+    translate_impl name or translate_next name
+  end
+
+
+  protected
+
+  def map name
+    @mapper[name]
+  end
+
+
+  private
+
+  def translate_next name
+    if @next_wrapper
+      then @next_wrapper.translate name
+      else @mapper[name]
+    end
   end
 
 end

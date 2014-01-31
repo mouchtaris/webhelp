@@ -16,16 +16,18 @@ class RcWuala
   extend ::ArgumentChecking
 
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
-  def initialize mapper
-    initialize_rc_wrapper_base mapper
+  def initialize scene, mapper, next_wrapper
+    initialize_rc_wrapper_base mapper, next_wrapper
   end
 
-  def translate(name, no_local: nil)
-    original = URI @mapper.translate name
-    if original.scheme == 'wuala'
-      then "https://content.wuala.com/contents/#{
-              original.user}/public#{original.path}"
-      else original
+
+  private
+
+  def translate_impl name
+    original = URI map name
+    if original.scheme.downcase == 'wuala' then
+      "https://content.wuala.com/contents/#{
+        original.user}/public#{original.path}"
     end
   end
 
