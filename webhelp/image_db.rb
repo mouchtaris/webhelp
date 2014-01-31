@@ -24,25 +24,25 @@ class ImageDb
     @sha = Digest::SHA512.new
   end
 
-  def entry url
-    @db[signature_for url]
+  def entry name
+    @db[signature_for name] || (raise "No entry for #{name}"; nil)
   end
 
-  def size url
-    entry(url)[:size]
+  def size name
+    entry(name)[:size]
   end
 
-  def width url
-    size(url)[0]
+  def width name
+    size(name)[0]
   end
 
-  def height url
-    size(url)[1]
+  def height name
+    size(name)[1]
   end
 
   private
-  def signature_for url
-    @sha.hexdigest url
+  def signature_for name
+    @sha.hexdigest name.to_s
   end
 
 end
