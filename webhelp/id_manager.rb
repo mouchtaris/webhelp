@@ -6,12 +6,13 @@ class IdManager
   def initialize
     @next = 'a'
     @map = {}
+    @counter = Util::Counter.new
   end
 
   # @return [String] the _id_ mapping
   def register id
     raise "#{id} already registered" if @map.has_key? id
-    @map[id] = next!
+    @map[id] = self.next
   end
 
   # _id_ must be registered.
@@ -24,11 +25,19 @@ class IdManager
   # If not, register it and return the mapping.
   # @return [String] the _id_ mapping
   def [] id
-    @map[id] ||= next!
+    @map[id] ||= self.next
+  end
+
+  # Create a unique id and register it.
+  # @return [String] the unique id mapping
+  def next!
+    id = @counter.next!
+    id = @counter.next! while @map[id]
+    register id
   end
 
   private
-  def next!
+  def next
     result = @next.dup.freeze
     @next.next!
     result
