@@ -12,7 +12,7 @@ class IdManager
   # @return [String] the _id_ mapping
   def register id
     raise "#{id} already registered" if @map.has_key? id
-    @map[id] = self.next
+    @map[id] = next_mapping
   end
 
   # _id_ must be registered.
@@ -25,7 +25,7 @@ class IdManager
   # If not, register it and return the mapping.
   # @return [String] the _id_ mapping
   def [] id
-    @map[id] ||= self.next
+    @map[id] ||= next_mapping
   end
 
   # Create a unique id and register it.
@@ -36,8 +36,13 @@ class IdManager
     register id
   end
 
+  # Clear all registrations/mappings.
+  def clear!
+    @map.clear;
+  end
+
   private
-  def next
+  def next_mapping
     result = @next.dup.freeze
     @next.next!
     result
