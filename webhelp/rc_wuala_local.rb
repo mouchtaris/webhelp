@@ -27,8 +27,9 @@ class RcWualaLocal
     if original.scheme and original.scheme.downcase == 'wuala'
       url = url_for original
       sig = signature_for original
+      ext = File.extname original.path
       update_db sig, url
-      "w/#{sig}"
+      "w/#{sig}#{ext}"
     end
   end
 
