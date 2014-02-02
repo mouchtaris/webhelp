@@ -39,6 +39,8 @@ module HtmlHelpers
       end
     end
 
+    (get_morecss[:'.image'] ||= []) << 'display: inline-block'
+
     haml_code = "#{imgid}.image{attrs}"
     haml haml_code, locals: {attrs: attrs}
   end
