@@ -21,6 +21,13 @@ class IdManager
     @map[id] || (raise "#{id} not registered")
   end
 
+  # _mapping_ must exist as a mapping of a
+  # registered id.
+  # @return [String] the _id_ for this _mapping_
+  def reverse_get mapping
+    (@map.rassoc(mapping) || (raise "#{mapping} is not a mapping of a registered id"))[0]
+  end
+
   # If _id_ is registered, retrieve the mapping.
   # If not, register it and return the mapping.
   # @return [String] the _id_ mapping
