@@ -22,14 +22,16 @@ module HtmlHelpers
     ]
   end
 
-  def img name, attrs = {}, hover_selector_prefix: nil, extra_mixins: nil
-    imgid                     = :"##{html_escape get_imgidmanager[name]}"
-    imghoverid                = if hover_selector_prefix
-                                  then :"#{hover_selector_prefix} #{imgid}"
-                                  else :"#{imgid}:hover"
-                                end
-    get_morecss[imgid]      ||= cssimg name
-    get_morecss[imghoverid] ||= cssimghover name
+  def img name, attrs: {}, with_hover: false, hover_selector_prefix: nil, extra_mixins: nil
+    imgid                 = :"##{html_escape get_imgidmanager[name]}"
+    get_morecss[imgid]  ||= cssimg name
+    if with_hover then
+      imghoverid  = if hover_selector_prefix
+                      then :"#{hover_selector_prefix} #{imgid}"
+                      else :"#{imgid}:hover"
+                    end
+      get_morecss[imghoverid] ||= cssimghover name
+    end
 
     if extra_mixins then
       for extra_mixin in Array extra_mixins do
