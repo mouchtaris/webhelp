@@ -41,6 +41,14 @@ class IdManager
     @map.clear;
   end
 
+  def each_id &block
+    @map.deep_dup.each_key &block
+  end
+
+  def each &block
+    @map.deep_dup.each &block
+  end
+
   private
   def next_mapping
     result = @next.dup.freeze
