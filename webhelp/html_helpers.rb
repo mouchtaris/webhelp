@@ -22,8 +22,8 @@ module HtmlHelpers
     ]
   end
 
-  def img name, attrs: {}, with_hover: false, hover_selector_prefix: nil, extra_mixins: nil
-    imgid                 = :"##{html_escape get_imgidmanager[name]}"
+  def img name, attrs: {}, id: nil, with_hover: false, hover_selector_prefix: nil, extra_mixins: nil
+    imgid                 = :"##{id or html_escape get_imgidmanager[name]}"
     get_morecss[imgid]  ||= cssimg name
     if with_hover then
       imghoverid  = if hover_selector_prefix
