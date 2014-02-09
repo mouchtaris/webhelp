@@ -10,7 +10,14 @@ module MigSass
   def render source
     Sass::Engine.new(source, syntax: :sass).render
   end
+end
 
+module MigScss
+  include Haml::Filters::Base
+
+  def render source
+    Sass::Engine.new(source, syntax: :scss).render
+  end
 end
 
 end
