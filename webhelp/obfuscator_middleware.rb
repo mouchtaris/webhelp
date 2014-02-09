@@ -4,7 +4,7 @@ module Webhelp
 
 class ObfuscatorMiddleware < Sinatra::Base
 
-  after do
+  def obfuscate_html_and_css
     ob      = Webhelp::Obfuscator.new
     body    = response.body.join
     obed    = ob.obfuscate_css ob.obfuscate_html body
@@ -28,6 +28,12 @@ class ObfuscatorMiddleware < Sinatra::Base
       halt 500, body
     end
     self.body obed
+  end
+
+  after do
+    case response.content_type
+      when %r{^text/html} then obfuscate_html_and_css
+    end
   end#after
 
 end#class ObfuscatorMiddleware
