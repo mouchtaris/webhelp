@@ -4,6 +4,60 @@ module Webhelp
 
 class ObfuscatorMiddleware < Sinatra::Base
 
+  # Separates a string into non-script and script sections.
+  # For example
+  #   <html>
+  #     <head>
+  #       <title>T</title>
+  #       <script>var a;</script>
+  #     </head>
+  #     <body>
+  #       <script>var b;</script>
+  #     </body>
+  #   </html>
+  # should be split to
+  #   [
+  #     [
+  #       "<html>\n  <head>\n    <title>T</title>\n    ",
+  #       "\n  </head>\n  <body>\n    ",
+  #       "\n  </body>\n</html>"
+  #     ],
+  #     [
+  #       "<script>var a;</script>",
+  #       "<script>var b;</script>"
+  #     ]
+  #   ]
+  def self.separate_script_sections str
+    clean = []
+    scripts = []
+    split1 = str.split %r,(?=<script[^>]*>),
+    clean << split1.shift
+    for split in split1 do
+      split2 = split.split %r,(?<=</script>),, -1
+      raise "Split2 expects the string to be split to exactly 2." +
+          "What is going on? #{{str: str, clean: clean,
+          scripts: scripts, split1: split1, split: split,
+          split2: split2}.to_json}" unless split2.length == 2
+      scripts << split2[0]
+      clean << split2[1]
+    end
+    [clean, scripts]
+  end
+
+  # @param clean_sections [Array<String>]
+  # @param script_sections [Array<String>]
+  # @return [String]
+  #     clean[0] + script[0] + clean[1] + ...
+  def self.join_clean_and_script_sections clean_sections, script_sections
+    raise ArgumentError.new("not(clean_sections.length - script_sections.length <= 1)") \
+        unless clean_sections.length - script_sections.length <= 1
+    result = ''
+    clean_sections.zip script_sections do |clean, script|
+      result << clean << script
+    end
+    result
+  end
+
   def obfuscate_html_and_css
     ob      = Webhelp::Obfuscator.new
     body    = response.body.join
