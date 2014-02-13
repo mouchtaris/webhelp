@@ -17,6 +17,7 @@ class Obfuscator
   def initialize
     @ids, @classes = Array.new 2 do Webhelp::IdManager.new end
   end
+  attr_reader :ids, :classes
 
   # Substitute all detected class and ID names
   # in a CSS string with their obfuscated mappings.

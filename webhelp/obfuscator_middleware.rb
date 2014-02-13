@@ -53,7 +53,8 @@ class ObfuscatorMiddleware < Sinatra::Base
         unless clean_sections.length - script_sections.length <= 1
     result = ''
     clean_sections.zip script_sections do |clean, script|
-      result << clean << script
+      result << clean
+      result << script if script
     end
     result
   end
@@ -61,8 +62,24 @@ class ObfuscatorMiddleware < Sinatra::Base
   def obfuscate_html_and_css
     ob      = Webhelp::Obfuscator.new
     body    = response.body.join
-    obed    = ob.obfuscate_css ob.obfuscate_html body
-    deobed  = ob.deobfuscate_html ob.deobfuscate_css obed
+    clean, script = ObfuscatorMiddleware.separate_script_sections body
+    obed_sections = clean.map do |sec|
+                      begin
+                        ob.obfuscate_html sec
+                      rescue => e
+                        raise "#{sec}\n\n---#{e}\n#{PP.pp ob, ''}"
+                      end
+                    end.
+                    map do |sec|
+                      begin
+                        ob.obfuscate_css sec
+                      rescue => e
+                        raise "#{sec}\n\n---#{e}\n#{PP.pp ob, ''}"
+                      end
+                    end
+    obed    = ObfuscatorMiddleware.join_clean_and_script_sections obed_sections, script
+    deobed_sections = obed_sections.map do |sec| ob.deobfuscate_html ob.deobfuscate_css sec end
+    deobed  = ObfuscatorMiddleware.join_clean_and_script_sections deobed_sections, script
     unless body == deobed then
       require 'diffy'
       diff = Diffy::Diff.new(body, deobed)
