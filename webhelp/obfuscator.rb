@@ -25,6 +25,10 @@ class Obfuscator
     css_obfuscation_operation OpGet, str
   end
 
+  # Replace obfuscated class and ID names with their
+  # original values.
+  # @param str [String] an obfuscated css string
+  # @return [String] the de-obfuscated css
   def deobfuscate_css str
     css_obfuscation_operation OpRGet, str
   end
@@ -36,6 +40,10 @@ class Obfuscator
     html_obfuscation_operation OpReg, str
   end
 
+  # Deobfuscate class and ID names with their original
+  # values.
+  # @param str [String] an obfuscated html string
+  # @return [String] the de-obfuscated html
   def deobfuscate_html str
     html_obfuscation_operation OpRGet, str
   end
