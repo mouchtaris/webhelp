@@ -10,7 +10,7 @@ module VendorHelpers
 
   module JQuerySource_development
     def jquery_source
-      Pathname(URI(JQuery2).path).basename.to_s
+      "#{Pathname(URI(JQuery2).path).basename.to_s}.gzip"
     end
   end
 
@@ -20,7 +20,7 @@ module VendorHelpers
 
   module JQuerySource_preproduction
     def jquery_source
-      Pathname(URI(JQuery2min).path).basename.to_s
+      "#{Pathname(URI(JQuery2min).path).basename.to_s}.gzip"
     end
   end
 

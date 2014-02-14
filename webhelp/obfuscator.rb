@@ -1,11 +1,12 @@
 module Webhelp
+using Util::UnboundMethodRefinements
 
 #
 # This obfuscator expects everything to be minified.
 #
 class Obfuscator
 
-  CssNameCatcher  = /([#\.])(\w+)([{\s>~:,\[])/
+  StringCatcher   = /(")[\w\s\d\.#]+\1/
   HexColorCatcher = /^\h{6}|\h{3}$/
   HtmlNameCatcher = /(class|id|for)(\s*=\s*["']?)(\w+)(["']?)/
 
@@ -38,7 +39,9 @@ class Obfuscator
   # obfuscate them.
   # @return [String] the obfuscated string
   def obfuscate_html str
-    html_obfuscation_operation OpReg, str
+    html_obfuscation_operation(OpReg, str).tap do
+      build_css_regex
+    end
   end
 
   # Deobfuscate class and ID names with their original
@@ -47,6 +50,22 @@ class Obfuscator
   # @return [String] the de-obfuscated html
   def deobfuscate_html str
     html_obfuscation_operation OpRGet, str
+  end
+
+  # Obfuscate the CSS class and ID selectors found
+  # in literal strings in _str_.
+  # @param str [String] a plain string
+  # @return [String] the obfuscated string
+  def obfuscate_js str
+    js_obfuscation_operation OpGet, str
+  end
+
+  # De-obfuscate all CSS class and ID selectors
+  # found in literal strings in _str_.
+  # @param str [String] an obfuscated string
+  # @return [String] the de-obfuscated result
+  def deobfuscate_js str
+    js_obfuscation_operation OpRGet, str
   end
 
   def each_id_mapping &block
@@ -60,24 +79,24 @@ class Obfuscator
 
   private
   def css_obfuscation_operation operation, str
-    str.gsub CssNameCatcher do
-      begin
-        whole         = $~[0]
-        discriminator = $~[1]
-        id            = $~[2]
-        next_char     = $~[3]
-        manager       = case discriminator
-                          when '.' then @classes
-                          when '#' then @ids
-                          else raise "How? #{discriminator.inspect}"
-                        end
-        if id =~ HexColorCatcher # caught a hex color
-          then whole
-          else "#{discriminator}#{operation.bind(manager).call id}#{next_char}"
-        end
-      rescue => e
-        raise "Error for #{discriminator}#{id}: #{e}"
-      end
+    return str unless @css_regex
+    str.gsub @css_regex do
+      whole         = $~[0]
+      discriminator = whole[0]
+      id            = whole[1..-1]
+      manager       = case discriminator
+                        when '.' then @classes
+                        when '#' then @ids
+                        else raise "How? #{discriminator.inspect}"
+                      end
+      "#{discriminator}#{operation.unbound_call manager, id}"
+    end
+  end
+
+  def js_obfuscation_operation operation, str
+    return str unless @css_regex
+    str.gsub StringCatcher do |match|
+      css_obfuscation_operation operation, match
     end
   end
 
@@ -91,7 +110,7 @@ class Obfuscator
                           when 'id', 'for' then @ids
                           else raise "How? #{discriminator.inspect}"
                         end
-        mapping       = operation.bind(manager).call id
+        mapping       = operation.unbound_call manager, id
         "#{$~[1]}#{$~[2]}#{mapping}#{$~[4]}"
       rescue => e
         raise "Error for #{discriminator}#{id}: #{e}"
@@ -99,6 +118,18 @@ class Obfuscator
     end
   end
 
+  def build_css_regex
+    if not @ids.empty? or not @classes.empty? then
+      @css_regex = %r,#{
+          (
+            @ids.each_id.map do |id| Regexp.escape "##{id}" end.to_a +
+            @classes.each_id.map do |name| Regexp.escape ".#{name}" end.to_a
+          ).join '|'
+          },
+    else
+      @css_regex = nil
+    end
+  end
 
 end#class Obfuscator
 

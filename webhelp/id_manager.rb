@@ -56,6 +56,10 @@ class IdManager
     @map.deep_dup.each &block
   end
 
+  def empty?
+    @map.empty?
+  end
+
   private
   def next_mapping
     result = @next.dup.freeze
