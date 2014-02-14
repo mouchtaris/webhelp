@@ -79,7 +79,12 @@ class ObfuscatorMiddleware < Sinatra::Base
   #     [String]
   # @return [nil | String] nil when everything is fine, an
   #     html body describing the error else.
-  def self.ensure_obfuscation_validity original_source, obfuscated_sections, clean_sections, deobfuscate, join
+  def self.ensure_obfuscation_validity(original_source,
+    obfuscated_sections,
+    clean_sections,
+    deobfuscate,
+    join
+  )
     deobfuscateds       = obfuscated_sections.map &deobfuscate
     deobfuscated_source = join.call deobfuscateds, clean_sections
     unless deobfuscated_source == original_source then
@@ -92,8 +97,12 @@ class ObfuscatorMiddleware < Sinatra::Base
               "    :css\n"                          +
               Diffy::CSS.each_line.map { |line|
               "      #{line}" }.join                +
+              "      body{font-family: monospace}\n"+
               "  %body\n"                           +
               "    %h1 Obfuscation Error\n"         +
+              "    %pre\n"                          +
+              "      deobfuscate: #{deobfuscate.inspect}\n" +
+              "      join: #{join.inspect}\n"       +
               "    %p Please check the diff below\n"+
               "    :plain\n"                        +
               diff.to_s(:html).each_line.map { |line|
@@ -143,13 +152,13 @@ class ObfuscatorMiddleware < Sinatra::Base
                               deobfuscate:  @ob.method(:deobfuscate_css   ),
                               source:       ob_html                       ,
                               )
-    ob_html_css_js =
-    obfuscate_only_tag(       tag_name:     :script                       ,
-                              obfuscate:    @ob.method(:obfuscate_js      ),
-                              deobfuscate:  @ob.method(:deobfuscate_js    ),
-                              source:       ob_html_css                   ,
-                              )
-    body ob_html_css_js
+   #ob_html_css_js =
+   #obfuscate_only_tag(       tag_name:     :script                       ,
+   #                          obfuscate:    @ob.method(:obfuscate_js      ),
+   #                          deobfuscate:  @ob.method(:deobfuscate_js    ),
+   #                          source:       ob_html_css                   ,
+   #                          )
+   #body ob_html_css_js
   end
 
   after do
