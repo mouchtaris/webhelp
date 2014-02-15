@@ -1,12 +1,12 @@
 module Webhelp
 using Util::UnboundMethodRefinements
-
+using Util::ArraySortRefinements
 #
 # This obfuscator expects everything to be minified.
 #
 class Obfuscator
 
-  StringCatcher   = /(")[\w\s\d\.#]+\1/
+  StringCatcher   = /(")([\w\s\d#{%w[. # ~ : >].map(&Regexp.method(:escape)).join}]+)\1/
   HexColorCatcher = /^\h{6}|\h{3}$/
   HtmlNameCatcher = /(class|id|for)(\s*=\s*["']?)(\w+)(["']?)/
 
@@ -98,7 +98,10 @@ class Obfuscator
   def js_obfuscation_operation operation, str
     return str unless @css_regex
     str.gsub StringCatcher do |match|
-      css_obfuscation_operation operation, match
+      delim   = $~[1]
+      id      = $~[2]
+      result  = css_obfuscation_operation operation, id
+      %Q,#{delim}#{result}#{delim},
     end
   end
 
@@ -125,10 +128,13 @@ class Obfuscator
     if not @ids.empty? or not @classes.empty? then
       %r,#{
         (
-          @ids.each_id.map do |id| Regexp.escape "##{id}" end.to_a +
-          @classes.each_id.map do |name| Regexp.escape ".#{name}" end.to_a
+          @ids.each_id.
+            map do |id| Regexp.escape "##{id}" end.
+            rsort_by(&:length) +
+          @classes.each_id.
+            map do |name| Regexp.escape ".#{name}" end.
+            rsort_by(&:length)
         ).
-        map do |r| /#{r}/ end.
         join '|'
         },
     end
@@ -139,12 +145,12 @@ class Obfuscator
     if not @ids.empty? or not @classes.empty? then
       %r,#{
         (
-          @ids.each.map do |id, mapping|
-              Regexp.escape "##{mapping}"
-            end.to_a +
-          @classes.each.map do |id, mapping|
-              Regexp.escape ".#{mapping}"
-            end.to_a
+          @ids.each.
+            map do |id, mapping| Regexp.escape "##{mapping}" end.
+            rsort_by(&:length) +
+          @classes.each.
+            map do |id, mapping| Regexp.escape ".#{mapping}" end.
+            rsort_by(&:length)
         ).
         map do |r| /#{r}(?!\w)/ end.
         join '|'

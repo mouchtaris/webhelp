@@ -1,3 +1,5 @@
+require 'util/deep_dup'
+
 module Webhelp
 
 class IdManager

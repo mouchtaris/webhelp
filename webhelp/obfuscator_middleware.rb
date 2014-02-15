@@ -152,13 +152,13 @@ class ObfuscatorMiddleware < Sinatra::Base
                               deobfuscate:  @ob.method(:deobfuscate_css   ),
                               source:       ob_html                       ,
                               )
-   #ob_html_css_js =
-   #obfuscate_only_tag(       tag_name:     :script                       ,
-   #                          obfuscate:    @ob.method(:obfuscate_js      ),
-   #                          deobfuscate:  @ob.method(:deobfuscate_js    ),
-   #                          source:       ob_html_css                   ,
-   #                          )
-   #body ob_html_css_js
+    ob_html_css_js =
+    obfuscate_only_tag(       tag_name:     :script                       ,
+                              obfuscate:    @ob.method(:obfuscate_js      ),
+                              deobfuscate:  @ob.method(:deobfuscate_js    ),
+                              source:       ob_html_css                   ,
+                              )
+    body ob_html_css_js
   end
 
   after do
