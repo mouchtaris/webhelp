@@ -1,6 +1,7 @@
 module Webhelp
 
 module ShellHelpers
+  extend self
 
   def gzip data
     IO.popen %w[ gzip --force -8 -c - ], 'wb+' do |gz|

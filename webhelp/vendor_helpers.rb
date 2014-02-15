@@ -5,12 +5,14 @@ module Webhelp
 
 module VendorHelpers
 
+  ExtGzip     = 'gz'
+
   JQuery2min  = 'http://code.jquery.com/jquery-2.1.0.min.js'
   JQuery2     = 'http://code.jquery.com/jquery-2.1.0.js'
 
   module JQuerySource_development
     def jquery_source
-      "#{Pathname(URI(JQuery2).path).basename.to_s}.gzip"
+      "#{Pathname(URI(JQuery2).path).basename.to_s}"
     end
   end
 
@@ -20,7 +22,7 @@ module VendorHelpers
 
   module JQuerySource_preproduction
     def jquery_source
-      "#{Pathname(URI(JQuery2min).path).basename.to_s}.gzip"
+      "#{Pathname(URI(JQuery2min).path).basename.to_s}"
     end
   end
 
