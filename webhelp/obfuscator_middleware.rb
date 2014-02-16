@@ -1,106 +1,59 @@
 require 'sinatra/base'
+using Util::StringRefinements
+using Util::ArrayMapNthRefinement
 
 module Webhelp
 
 class ObfuscatorMiddleware < Sinatra::Base
 
-  # Separates a string into non-script and script sections.
-  # For example
-  #   <html>
-  #     <head>
-  #       <title>T</title>
-  #       <script>var a;</script>
-  #     </head>
-  #     <body>
-  #       <script>var b;</script>
-  #     </body>
-  #   </html>
-  # should be split to
-  #   [
-  #     [
-  #       "<html>\n  <head>\n    <title>T</title>\n    ",
-  #       "\n  </head>\n  <body>\n    ",
-  #       "\n  </body>\n</html>"
-  #     ],
-  #     [
-  #       "<script>var a;</script>",
-  #       "<script>var b;</script>"
-  #     ]
-  #   ]
+  # @return [Array<(String, String)>] [ [non_tag_section, tag_section], ...]
   def self.separate_tags_sections tags_names, source
-  # TODO make a string utility
-  # (essentially tags_names is a list of regular
-  #  expressions that splits the source into sections).
-  # (something like this could be also be used to separate
-  #  string literals from a source, for instance).
     tags_regex        = /<(#{tags_names.join '|'})[^>]*>/
     opening_regex     = /(?=#{tags_names.map do |t| "<#{t}[^>]*>" end.join '|'})/
     name_regex        = /^#{tags_regex}/
-    tag_sections      = []
-    non_tag_sections  = []
+    make_closing_regex= lambda do |rest| tag_name = name_regex.match(rest)[1]; %r,(?<=</#{tag_name}>), end
+    result            = []
 
-    rest = source
-    until rest.nil? or rest.empty? do
-      non_tag_sec, rest = rest.split opening_regex, 2
-      if name_regex =~ non_tag_sec
-        then  # there is no space between two consecutive
-              # tag sections and there is no non-tag-
-              # section. MUST add nil though, in order
-              # to be able to stick pieces back in the
-              # right order.
-        rest = "#{non_tag_sec}#{rest}"
-        non_tag_sec = nil
-      end
-      non_tag_sections << non_tag_sec
-      if rest then
-        tag_name      = name_regex.match(rest)[1]
-        closing_regex = %r,(?<=</#{tag_name}>),
-        tag_sec, rest = rest.split closing_regex, 2
-        tag_sections << tag_sec
-      end
-    end
-
-    [non_tag_sections, tag_sections]
-  end
-
-  # @param processed_sections [Array<String>]
-  # @param untouched_sections [Array<String>]
-  # @return [String]
-  #     clean[0] + tag[0] + clean[1] + ...
-  def self.join_sections processed_sections, untouched_sections
-    raise ArgumentError.new("not(processed_sections.length - untouched_sections.length <= 1)") \
-        unless processed_sections.length - untouched_sections.length <= 1
-    result = ''
-    processed_sections.zip untouched_sections do |clean, script|
-      result << clean if clean
-      result << script if script
+    # TODO RUBYBUG: refinements are not detected with enum_for()
+    source.sections(opening_regex, make_closing_regex) do |non_tag_sec, tag_sec|
+      result << [non_tag_sec, tag_sec]
     end
     result
+  end
+
+  # @param sections [Array<(String, String)>]
+  # @return [String] section[i][0] + section[i][1]
+  def self.join_sections sections
+    sections.reduce '' do |result, pair|
+      result << pair[0] if pair[0]
+      result << pair[1] if pair[1]
+      result
+    end
   end
 
   class ObfuscationInvalidityError < Exception; end
   # Ensures that de-obfuscating an obfuscated source results
   # back to the original source.
   # @param original_source [String] the original source
-  # @param obfuscated_sections [Array<String>] the obfuscated
-  #     sections
-  # @param clean_sections [Array<String>] sections between the
-  #     obfuscated sections, which did not undergo obfuscation
+  # @param sections [Array<(String, String)>] pairs of
+  #     obfuscated and non-obfuscated sections
+  # @param obfuscated_section_index [Fixnum] the index
+  #     of the section element which has undergone obfuscation
   # @param deobfuscate [#call([String])] the
   #     deobfuscation-on-string operation
-  # @param join [#call(de-obfuscated_sections, clean_sections)]
-  #     joins de-obfuscated_sections and clean_sections into a
-  #     [String]
   # @return [nil | String] nil when everything is fine, an
   #     html body describing the error else.
   def self.ensure_obfuscation_validity(original_source,
-    obfuscated_sections,
-    clean_sections,
-    deobfuscate,
-    join
+    sections,
+    obfuscated_section_index,
+    deobfuscate
   )
-    deobfuscateds       = obfuscated_sections.map do |obd| deobfuscate.call obd if obd end
-    deobfuscated_source = join.call deobfuscateds, clean_sections
+    deobfuscated_source = join_sections \
+        sections.map { |pair|
+          replacement = pair.dup
+          replacement[obfuscated_section_index] &&= deobfuscate.call pair[obfuscated_section_index]
+          replacement
+        }
     unless deobfuscated_source == original_source then
       require 'diffy'
       diff = Diffy::Diff.new(original_source, deobfuscated_source)
@@ -123,9 +76,8 @@ class ObfuscatorMiddleware < Sinatra::Base
               "  %body\n"                           +
               "    %h1 Obfuscation Error\n"         +
               "    %p Please check the diff below\n"+
-              "    :plain\n"                        +
-              diff.to_s(:html).each_line.map { |line|
-              "      #{line}" }.join
+              diff.to_s(:html).split(/[\n\r]+/).map { |line|
+              "    \\#{line}\n" }.join
       Haml::Engine.new(body).render
     end
   end
@@ -136,25 +88,30 @@ class ObfuscatorMiddleware < Sinatra::Base
   end
 
   def obfuscate_except_for_tags(tags_names:, obfuscate:, deobfuscate:, source:)
-    cleans, tags  = ObfuscatorMiddleware.separate_tags_sections tags_names, source
-    obfuscateds   = cleans.map do |clean| obfuscate.call clean if clean end
-    if error_body = ObfuscatorMiddleware.ensure_obfuscation_validity(
-                      source, obfuscateds, tags, deobfuscate, ObfuscatorMiddleware.method(:join_sections))
-      then halt 500, error_body
+    sections  =
+        ObfuscatorMiddleware.separate_tags_sections(tags_names, source).
+        map_nth 0 do |non_tag| non_tag and obfuscate.call non_tag end
+    if error_body =
+        ObfuscatorMiddleware.ensure_obfuscation_validity(
+            source, sections, 0, deobfuscate)
+      then halt 500, "#{error_body}<!--\n#{
+                        Haml::Helpers.html_escape Hash(tags_names: tags_names).to_yaml}\n-->"
     end
-    obfuscated = ObfuscatorMiddleware.join_sections obfuscateds, tags
+    obfuscated = ObfuscatorMiddleware.join_sections sections
     obfuscated
   end
 
   def obfuscate_only_tag(tag_name:, obfuscate:, deobfuscate:, source:)
-    cleans, tags  = ObfuscatorMiddleware.separate_tags_sections [tag_name], source
-    obfuscateds   = tags.map &obfuscate
-    if error_body = ObfuscatorMiddleware.ensure_obfuscation_validity(
-                      source, obfuscateds, cleans, deobfuscate,
-                      lambda do |deobs, cleans| ObfuscatorMiddleware.join_sections cleans, deobs end)
-      then halt 500, error_body
+    sections  =
+        ObfuscatorMiddleware.separate_tags_sections([tag_name], source).
+        map_nth 1 do |tag| tag and obfuscate.call tag end
+    if error_body =
+        ObfuscatorMiddleware.ensure_obfuscation_validity(
+            source, sections, 1, deobfuscate)
+      then halt 500, "#{error_body}<!--\n#{
+                        Haml::Helpers.html_escape Hash(tag_name: tag_name).to_yaml}\n-->"
     end
-    obfuscated = ObfuscatorMiddleware.join_sections cleans, obfuscateds
+    obfuscated = ObfuscatorMiddleware.join_sections sections
     obfuscated
   end
 
