@@ -28,6 +28,11 @@ class ObfuscatorMiddleware < Sinatra::Base
   #     ]
   #   ]
   def self.separate_tags_sections tags_names, source
+  # TODO make a string utility
+  # (essentially tags_names is a list of regular
+  #  expressions that splits the source into sections).
+  # (something like this could be also be used to separate
+  #  string literals from a source, for instance).
     tags_regex        = /<(#{tags_names.join '|'})[^>]*>/
     opening_regex     = /(?=#{tags_names.map do |t| "<#{t}[^>]*>" end.join '|'})/
     name_regex        = /^#{tags_regex}/
@@ -37,7 +42,16 @@ class ObfuscatorMiddleware < Sinatra::Base
     rest = source
     until rest.nil? or rest.empty? do
       non_tag_sec, rest = rest.split opening_regex, 2
-      non_tag_sections << non_tag_sec if non_tag_sec
+      if name_regex =~ non_tag_sec
+        then  # there is no space between two consecutive
+              # tag sections and there is no non-tag-
+              # section. MUST add nil though, in order
+              # to be able to stick pieces back in the
+              # right order.
+        rest = "#{non_tag_sec}#{rest}"
+        non_tag_sec = nil
+      end
+      non_tag_sections << non_tag_sec
       if rest then
         tag_name      = name_regex.match(rest)[1]
         closing_regex = %r,(?<=</#{tag_name}>),
@@ -58,7 +72,7 @@ class ObfuscatorMiddleware < Sinatra::Base
         unless processed_sections.length - untouched_sections.length <= 1
     result = ''
     processed_sections.zip untouched_sections do |clean, script|
-      result << clean
+      result << clean if clean
       result << script if script
     end
     result
@@ -85,7 +99,7 @@ class ObfuscatorMiddleware < Sinatra::Base
     deobfuscate,
     join
   )
-    deobfuscateds       = obfuscated_sections.map &deobfuscate
+    deobfuscateds       = obfuscated_sections.map do |obd| deobfuscate.call obd if obd end
     deobfuscated_source = join.call deobfuscateds, clean_sections
     unless deobfuscated_source == original_source then
       require 'diffy'
@@ -98,11 +112,16 @@ class ObfuscatorMiddleware < Sinatra::Base
               Diffy::CSS.each_line.map { |line|
               "      #{line}" }.join                +
               "      body{font-family: monospace}\n"+
+              "      .diff del strong {\n"          +
+              "         border: 1px solid red;\n"   +
+              "         background-color: #FAA;\n"  +
+              "       }\n"                          +
+              "       .diff ins strong {\n"         +
+              "         border: 1px solid green;\n" +
+              "         background-color: #AFA;\n"  +
+              "       }\n"                          +
               "  %body\n"                           +
               "    %h1 Obfuscation Error\n"         +
-              "    %pre\n"                          +
-              "      deobfuscate: #{deobfuscate.inspect}\n" +
-              "      join: #{join.inspect}\n"       +
               "    %p Please check the diff below\n"+
               "    :plain\n"                        +
               diff.to_s(:html).each_line.map { |line|
@@ -118,7 +137,7 @@ class ObfuscatorMiddleware < Sinatra::Base
 
   def obfuscate_except_for_tags(tags_names:, obfuscate:, deobfuscate:, source:)
     cleans, tags  = ObfuscatorMiddleware.separate_tags_sections tags_names, source
-    obfuscateds   = cleans.map &obfuscate
+    obfuscateds   = cleans.map do |clean| obfuscate.call clean if clean end
     if error_body = ObfuscatorMiddleware.ensure_obfuscation_validity(
                       source, obfuscateds, tags, deobfuscate, ObfuscatorMiddleware.method(:join_sections))
       then halt 500, error_body

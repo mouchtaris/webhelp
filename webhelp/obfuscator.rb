@@ -8,7 +8,7 @@ class Obfuscator
 
   StringCatcher   = /(")([\w\s\d#{%w[. # ~ : >].map(&Regexp.method(:escape)).join}]+)\1/
   HexColorCatcher = /^\h{6}|\h{3}$/
-  HtmlNameCatcher = /(class|id|for)(\s*=\s*["']?)(\w+)(["']?)/
+  HtmlNameCatcher = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>\w+)(\k<strdelim>?)/
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
@@ -108,15 +108,15 @@ class Obfuscator
   def html_obfuscation_operation operation, str
     str.gsub HtmlNameCatcher do
       begin
-        discriminator = $~[1]
-        id            = $~[3]
+        discriminator = $~[:discriminator]
+        id            = $~[:id]
         manager       = case discriminator.to_s.downcase
                           when 'class' then @classes
                           when 'id', 'for' then @ids
                           else raise "How? #{discriminator.inspect}"
                         end
         mapping       = operation.unbound_call manager, id
-        "#{$~[1]}#{$~[2]}#{mapping}#{$~[4]}"
+        "#{discriminator}#{$~[:assign]}#{mapping}#{$~[:strdelim]}"
       rescue => e
         raise "Error for #{discriminator}#{id}: #{e}"
       end
@@ -152,7 +152,7 @@ class Obfuscator
             map do |id, mapping| Regexp.escape ".#{mapping}" end.
             rsort_by(&:length)
         ).
-        map do |r| /#{r}(?!\w)/ end.
+        map do |r| /#{r}(?![\w\d])/ end.
         join '|'
         },
     end

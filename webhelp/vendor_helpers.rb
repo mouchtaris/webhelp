@@ -17,13 +17,13 @@ module VendorHelpers
   end
 
   module JQuerySource_test
-    include JQuerySource_development
-  end
-
-  module JQuerySource_preproduction
     def jquery_source
       "#{Pathname(URI(JQuery2min).path).basename.to_s}"
     end
+  end
+
+  module JQuerySource_preproduction
+    include JQuerySource_test
   end
 
   module JQuerySource_production
