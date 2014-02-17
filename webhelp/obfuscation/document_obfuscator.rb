@@ -1,5 +1,10 @@
+using Util::StringRefinements
+
 module Webhelp
 module Obfuscation
+
+# Bring into scope
+ObfuscationInvalidityError
 
 class DocumentObfuscator
 
@@ -28,7 +33,6 @@ class DocumentObfuscator
     end
   end
 
-  class ObfuscationInvalidityError < Exception; end
   # Ensures that de-obfuscating an obfuscated source results
   # back to the original source.
   # @param original_source [String] the original source
