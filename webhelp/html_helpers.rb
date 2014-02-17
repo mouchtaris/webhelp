@@ -2,18 +2,6 @@ module Webhelp
 
 module HtmlHelpers
 
-  def cssimg name
-    url       = get_rcmapper.translate name
-    width     = img_width name
-    height    = img_height name
-    [
-      "background-image: url('#{url}')"  ,
-      "background-repeat: no-repeat"     ,
-      "background-position: top center"  ,
-      "width: #{width}px"                ,
-      "height: #{height}px"              ,
-    ]
-  end
 
   def cssimghover name, hover_selector_prefix: nil
     url_hover = get_rcmapper.translate :"#{name}_hover"
