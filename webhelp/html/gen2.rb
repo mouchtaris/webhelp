@@ -4,10 +4,10 @@ module Webhelp
 module Html
 
 # Helpers for 2-phase parsing/output generation.
-module Gen2
+class Gen2
   include Util::ArgumentChecking
 
-  def initialize_gen2
+  def initialize
     @gen2_morecss = {}
   end
 
@@ -51,7 +51,7 @@ module Gen2
     end
   end
 
-end#module Gen2
+end#class Gen2
 
 end#module Html
 end#module Webhelp
