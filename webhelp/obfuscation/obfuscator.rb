@@ -1,6 +1,9 @@
-module Webhelp
 using Util::UnboundMethodRefinements
 using Util::ArraySortRefinements
+
+module Webhelp
+module Obfuscation
+
 #
 # This obfuscator expects everything to be minified.
 #
@@ -160,4 +163,5 @@ class Obfuscator
 
 end#class Obfuscator
 
+end#module Obfuscation
 end#module Webhelp

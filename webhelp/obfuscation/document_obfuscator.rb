@@ -1,10 +1,7 @@
-require 'sinatra/base'
-using Util::StringRefinements
-using Util::ArrayMapNthRefinement
-
 module Webhelp
+module Obfuscation
 
-class ObfuscatorMiddleware < Sinatra::Base
+class DocumentObfuscator
 
   # @return [Array<(String, String)>] [ [non_tag_section, tag_section], ...]
   def self.separate_tags_sections tags_names, source
@@ -56,6 +53,7 @@ class ObfuscatorMiddleware < Sinatra::Base
         }
     unless deobfuscated_source == original_source then
       require 'diffy'
+      require 'haml'
       diff = Diffy::Diff.new(original_source, deobfuscated_source)
       body =  "!!!\n"                               +
               "%html\n"                             +
@@ -82,20 +80,16 @@ class ObfuscatorMiddleware < Sinatra::Base
     end
   end
 
-  def initialize app
-    super
-    @ob = Webhelp::Obfuscator.new
-  end
-
-  def obfuscate_except_for_tags(tags_names:, obfuscate:, deobfuscate:, source:)
+  def self.obfuscate_except_for_tags(tags_names:, obfuscate:, deobfuscate:, source:)
     sections  =
         ObfuscatorMiddleware.separate_tags_sections(tags_names, source).
         map_nth 0 do |non_tag| non_tag and obfuscate.call non_tag end
     if error_body =
         ObfuscatorMiddleware.ensure_obfuscation_validity(
             source, sections, 0, deobfuscate)
-      then halt 500, "#{error_body}<!--\n#{
-                        Haml::Helpers.html_escape Hash(tags_names: tags_names).to_yaml}\n-->"
+      then
+        raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
+            Haml::Helpers.html_escape Hash(tags_names: tags_names).to_yaml}\n-->"
     end
     obfuscated = ObfuscatorMiddleware.join_sections sections
     obfuscated
@@ -108,19 +102,25 @@ class ObfuscatorMiddleware < Sinatra::Base
     if error_body =
         ObfuscatorMiddleware.ensure_obfuscation_validity(
             source, sections, 1, deobfuscate)
-      then halt 500, "#{error_body}<!--\n#{
-                        Haml::Helpers.html_escape Hash(tag_name: tag_name).to_yaml}\n-->"
+      then
+        raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
+            Haml::Helpers.html_escape Hash(tag_name: tag_name).to_yaml}\n-->"
     end
     obfuscated = ObfuscatorMiddleware.join_sections sections
     obfuscated
   end
 
-  def obfuscate
+  def initialize
+    super
+    @ob = Webhelp::Obfuscator.new
+  end
+
+  def obfuscate source
     ob_html =
     obfuscate_except_for_tags(tags_names:   [:style, :script]             ,
                               obfuscate:    @ob.method(:obfuscate_html    ),
                               deobfuscate:  @ob.method(:deobfuscate_html  ),
-                              source:       body.join                     ,
+                              source:       source                        ,
                               )
     ob_html_css =
     obfuscate_only_tag(       tag_name:     :style                        ,
@@ -134,15 +134,10 @@ class ObfuscatorMiddleware < Sinatra::Base
                               deobfuscate:  @ob.method(:deobfuscate_js    ),
                               source:       ob_html_css                   ,
                               )
-    body ob_html_css_js
+    ob_html_css_js
   end
 
-  after do
-    case response.content_type
-      when %r{^text/html} then obfuscate
-    end
-  end#after
+end#class DocumentObfuscator
 
-end#class ObfuscatorMiddleware
-
+end#module Obfuscation
 end#module Webhelp
