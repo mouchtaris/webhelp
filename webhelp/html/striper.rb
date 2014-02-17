@@ -1,4 +1,5 @@
 module Webhelp
+module Html
 
 # Provide numbered html class names. Aids in
 # row/column colouring.
@@ -32,6 +33,7 @@ class Striper
     "#@stem#@current"
   end
 
-end
+end#class Striper
 
-end
+end#module Html
+end#module Webhelp

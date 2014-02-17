@@ -3,7 +3,9 @@ require 'yaml'
 require 'fileutils'
 
 module Webhelp
+module Db
 
+# TODO is this really used?
 class WualaRcDb
   include ArgumentChecking
 
@@ -50,6 +52,7 @@ class WualaRcDb
     end
   end
 
-end
+end#class WualaRcDb
 
-end
+end#module Db
+end#module Webhelp
