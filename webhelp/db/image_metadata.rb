@@ -1,12 +1,9 @@
-require 'fileutils'
-require 'digest/sha2'
-require 'util/deep_freeze'
-
 module Webhelp
+module Db
 
-class ImageDb
+class ImageMetadata
 
-  Path = 'db/img_db.yaml'
+  Path = 'db/img_metadata_db.yaml'
 
   private \
     def new_yaml_loader
@@ -45,6 +42,7 @@ class ImageDb
     @sha.hexdigest name.to_s
   end
 
-end
+end#class ImageMetadata
 
-end
+end#module Db
+end#module Webhelp
