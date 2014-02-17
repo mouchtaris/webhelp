@@ -1,6 +1,7 @@
 require 'uri'
 
 module Webhelp
+module Rc
 
 # An Webhelp::RcMapper wrapper which filters and
 # offeres meaningful #translate responses for
@@ -11,7 +12,7 @@ module Webhelp
 # they are forwarded to the wrapped mapper.
 #
 
-class RcWuala
+class Wuala
   include Webhelp::RcWrapperBase
   extend ::ArgumentChecking
 
@@ -31,6 +32,7 @@ class RcWuala
     end
   end
 
-end
+end#class Wuala
 
-end
+end#module Rc
+end#module Webhelp

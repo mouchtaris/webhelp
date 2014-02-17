@@ -3,8 +3,9 @@ require 'digest/sha2'
 require 'sinatra/base'
 
 module Webhelp
+module Rc
 
-class RcWualaLocal
+class WualaLocal
   include Webhelp::RcWrapperBase
   extend ::ArgumentChecking
 
@@ -110,6 +111,7 @@ class RcWualaLocal
     raze[] unless scene.respond_to? :config
   end
 
-end
+end#class WualaLocal
 
-end
+end#module Rc
+end#module Webhelp
