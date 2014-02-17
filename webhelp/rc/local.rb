@@ -1,8 +1,9 @@
 require 'digest/sha2'
 
 module Webhelp
+module Rc
 
-class RcLocal
+class Local
   include Webhelp::RcWrapperBase
 
   def initialize mapper, next_wrapper
@@ -18,6 +19,7 @@ class RcLocal
     @sha.hexdigest(original.to_s) + File.extname(original.path)
   end
 
-end
+end#class Local
 
-end
+end#module Rc
+end#module Webhelp

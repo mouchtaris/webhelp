@@ -13,7 +13,7 @@ class Obfuscator
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
   OpRGet  = Webhelp::IdManager.public_instance_method :reverse_get
-  private_constant *%i{ OpReg OpGet OpRGet }
+  private_constant :OpReg, :OpGet, :OpRGet
 
   def initialize
     @ids, @classes = Array.new 2 do Webhelp::IdManager.new end

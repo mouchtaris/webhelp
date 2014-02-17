@@ -1,6 +1,7 @@
 module Webhelp
+module Rc
 
-class RcFacade
+class Facade
 
   # @param mapper [Webhelp::RcMapper]
   def initialize mapper
@@ -11,6 +12,7 @@ class RcFacade
     @rc.translate name
   end
 
-end
+end#class Facade
 
-end
+end#module Rc
+end#module Webhelp

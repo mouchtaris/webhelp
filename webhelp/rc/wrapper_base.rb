@@ -1,10 +1,11 @@
 module Webhelp
+module Rc
 
 # A base for Webhelp::RcMapper wrappers.
 #
 # _@mapper_ is the wrapped mapper.
 
-module RcWrapperBase
+module WrapperBase
 
   def initialize *args, &block
     super
@@ -41,6 +42,7 @@ module RcWrapperBase
     end
   end
 
-end
+end#module WrapperBase
 
-end
+end#module Rc
+end#module Webhelp
