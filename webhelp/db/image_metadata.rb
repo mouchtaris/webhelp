@@ -3,21 +3,26 @@ module Db
 
 class ImageMetadata
 
-  Path = 'db/img_metadata_db.yaml'
+  # Generate a {Util::YamlLoader} which load the
+  # given db-files.
+  #
+  # See {Util::YamlLoader} for more info on the
+  # argument.
+  #
+  # @param db_files [Array<String>]
+  #
+  def new_yaml_loader db_files
+    Class.new do
+      include Util::YamlLoader
+      def initialize
+        initialize_yaml_loader *db_files
+      end
+    end.new
+  end
+  private :new_yaml_loader
 
-  private \
-    def new_yaml_loader
-      FileUtils::Verbose.touch Path unless File.file? Path
-      Class.new {
-        include Util::YamlLoader
-        def initialize
-          initialize_yaml_loader Path
-        end
-      }.new
-    end
-
-  def initialize
-    @db = new_yaml_loader.reload.deep_freeze
+  def initialize *db_files
+    @db = new_yaml_loader(db_files).reload.deep_freeze
     @sha = Digest::SHA512.new
   end
 

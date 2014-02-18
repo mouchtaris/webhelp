@@ -3,7 +3,7 @@ require 'uri'
 module Webhelp
 module Rc
 
-# An Webhelp::RcMapper wrapper which filters and
+# A Webhelp::RcMapper wrapper which filters and
 # offeres meaningful #translate responses for
 # wuala-stored content.
 #
@@ -17,7 +17,7 @@ class Wuala
   extend ::ArgumentChecking
 
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
-  def initialize scene, mapper, next_wrapper
+  def initialize mapper, next_wrapper
     initialize_rc_wrapper_base mapper, next_wrapper
   end
 
