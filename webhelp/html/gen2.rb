@@ -8,7 +8,7 @@ class Gen2
   include Util::ArgumentChecking
 
   def initialize
-    @gen2_morecss = {}
+    clear_morecss
   end
 
   # @param selector [Symbol] the css selector (literally)
@@ -26,6 +26,10 @@ class Gen2
     else
       @gen2_morecss.deep_dup.freeze
     end
+  end
+
+  def clear_morecss
+    @gen2_morecss = {}
   end
 
 
