@@ -13,7 +13,7 @@ class WualaRcDb
 
   private \
     def new_yaml_loader
-      FileUtils::Verbose.touch Path unless File.file? Path 
+      FileUtils::Verbose.touch Path unless File.file? Path
       Object.new.extend(Util::YamlLoader).tap do |yloader|
         yloader.initialize_yaml_loader Path
       end

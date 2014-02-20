@@ -41,7 +41,7 @@ class Image
   # Return the hover id for an image-background
   # element, based on the given selector prefix or
   # the default of #id:hover.
-  # @param prefix [String, Symbol, nil] 
+  # @param prefix [String, Symbol, nil]
   #     a full css selector to be placed before the
   #     element id
   # @param id [String, Symbol] the element id,
