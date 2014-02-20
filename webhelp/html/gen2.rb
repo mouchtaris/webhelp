@@ -1,5 +1,3 @@
-require 'util/deep_dup'
-
 module Webhelp
 module Html
 

@@ -2,9 +2,9 @@ module Webhelp
 module HamlHelpers
 
 module Rc
-  extend InstanceRequirementsChecker
+  extend Util::InstanceRequirementsChecker
 
-  InstanceRequirements = %i[ rc_mapper ]
+  InstanceRequirements = %i[ rcmapper ]
 
   module Environments
 
@@ -13,17 +13,16 @@ module Rc
       # Translate _id_ to _local_id_.
       #
       def font_rc id
-        rc_mapper.translate :"local_#{id}"
+        rcmapper.translate :"local_#{id}"
       end
 
     end#module Production
 
     module Default
 
-      define_method :font_rc, rc_mapper.method(:translate)
-      #def font_rc id
-      #  rc_mapper.translate id
-      #end
+      def font_rc id
+        rcmapper.translate id
+      end
 
     end#module Default
 

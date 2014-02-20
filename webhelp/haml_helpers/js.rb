@@ -2,7 +2,7 @@ module Webhelp
 module HamlHelpers
 
 module Js
-  extend InstanceRequirementsChecker
+  extend Util::InstanceRequirementsChecker
 
   InstanceRequirements = %i[ config ]
 
@@ -40,7 +40,7 @@ module Js
     end#module Test
 
     module Default
-      define_method js_import__test, Test.instance_method(:js_import)
+      define_method :js_import__test, Test.instance_method(:js_import)
       def js_import id
         js_import__test :"#{id}Min"
       end

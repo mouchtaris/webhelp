@@ -2,7 +2,7 @@ module Webhelp
 module HamlHelpers
 
 module Opal
-  extend InstanceRequirementsChecker
+  extend Util::InstanceRequirementsChecker
 
   InstanceRequirements = %i[ config ]
 

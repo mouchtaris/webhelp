@@ -4,7 +4,7 @@ require 'sass'
 module Webhelp
 module HamlFilters
 
-class Scss
+module Scss
   include Haml::Filters::Base
 
   DefaultOptions = {syntax: :scss}
@@ -12,7 +12,7 @@ class Scss
   def render source
     Sass::Engine.new(source, DefaultOptions).render
   end
-end#class Scss
+end#module Scss
 
 end#module HamlFilters
 end#module Webhelp
