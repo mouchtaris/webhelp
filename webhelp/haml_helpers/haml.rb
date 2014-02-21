@@ -21,13 +21,11 @@ module Haml
   # @param id [Symbol] basename of the files to process
   # @return [String] the haml process result
   def haml2 id
-    # TODO move template loading logic to dedicated component
-    head = File.read "#{config.view_dir + "#{id}_head.haml"}"
-    body = File.read "#{config.view_dir + "#{id}.haml"}"
+    head_id = :"#{id}_head"
     # pre-process (running this generates info needed for
     # header generation)
-    body = haml body
-    head = haml head
+    body = haml id
+    head = haml head_id
     "#{head}\n#{body}"
   end
 

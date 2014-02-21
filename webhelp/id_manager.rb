@@ -1,9 +1,7 @@
-require 'util/deep_dup'
-
 module Webhelp
 
 class IdManager
-  include ::ArgumentChecking
+  include Util::ArgumentChecking
 
   def initialize
     @next = 'a'
