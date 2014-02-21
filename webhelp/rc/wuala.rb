@@ -13,8 +13,8 @@ module Rc
 #
 
 class Wuala
-  include Webhelp::RcWrapperBase
-  extend ::ArgumentChecking
+  include Webhelp::Rc::WrapperBase
+  extend Util::ArgumentChecking
 
   # @param mapper [Webhelp::RcMapper] the wrapped mapper
   def initialize mapper, next_wrapper

@@ -14,10 +14,10 @@ class ImageMetadata
   def new_yaml_loader db_files
     Class.new do
       include Util::YamlLoader
-      def initialize
+      def initialize db_files
         initialize_yaml_loader *db_files
       end
-    end.new
+    end.new db_files
   end
   private :new_yaml_loader
 

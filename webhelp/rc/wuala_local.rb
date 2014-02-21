@@ -6,15 +6,14 @@ module Webhelp
 module Rc
 
 class WualaLocal
-  include Webhelp::RcWrapperBase
-  extend ::ArgumentChecking
+  include Webhelp::Rc::WrapperBase
+  include Util::ArgumentChecking
 
   # @param wuala_dir [Pathname]
   def initialize(mapper, next_wrapper, wuala_dir:)
     require_path{:wuala_dir}
     @sha                  = Digest::SHA512.new
     @sig_to_url_db        = {}
-    @sinatra_middleware   = new_sinatra_middleware
     @wuala_dir            = wuala_dir
     initialize_rc_wrapper_base mapper, next_wrapper
   end
