@@ -26,8 +26,12 @@ class ImageMetadata
     @sha = Digest::SHA512.new
   end
 
+  def image? name
+    @db[signature_for name]
+  end
+
   def entry name
-    @db[signature_for name] || (raise "No entry for #{name}"; nil)
+    image?(name) || (raise "No entry for #{name}"; nil)
   end
 
   def size name

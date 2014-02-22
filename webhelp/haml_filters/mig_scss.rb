@@ -4,7 +4,7 @@ require 'sass'
 module Webhelp
 module HamlFilters
 
-module Scss
+module MigScss
   include Haml::Filters::Base
 
   DefaultOptions = {syntax: :scss}
