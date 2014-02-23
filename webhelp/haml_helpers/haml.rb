@@ -25,8 +25,7 @@ module Haml
     # pre-process (running this generates info needed for
     # header generation)
     body = haml id
-    head = haml head_id
-    "#{head}\n#{body}"
+    haml head_id do body end
   end
 
 end#module Haml
