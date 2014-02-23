@@ -13,7 +13,8 @@ module Rc
       # Translate _id_ to _local_id_.
       #
       def font_rc id
-        rcmapper.translate :"local_#{id}"
+        original = URI rcmapper.translate id
+        "#{Digest::SHA512.new.hexdigest original.to_s}#{File.extname original.path}"
       end
 
     end#module Production

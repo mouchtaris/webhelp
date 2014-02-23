@@ -25,9 +25,12 @@ module WrapperBase
     translate_impl name or translate_next name
   end
 
-
-  protected
-
+  # By-pass all wrappers (including this one) and map _name_
+  # using the original, wrapped mapper.
+  #
+  # @param name [Symbol]
+  # @return [String] the original mapping
+  #
   def map name
     @mapper[name]
   end
