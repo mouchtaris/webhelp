@@ -49,7 +49,12 @@ module Css
       # @param id [Symbol]
       #
       def css_import id
-        haml :"#{id}_css"
+        style = haml :"#{id}_css"
+        formatted_style = style.each_line.
+            map do |line| "  #{line.chomp}\n" end.
+            join
+        haml  ":scss\n" +
+              "#{formatted_style}"
       end
     end#module Default
   end#module Environments

@@ -1,23 +1,17 @@
 require 'sinatra/base'
-using Util::StringRefinements
-using Util::ArrayMapNthRefinement
 
 module Webhelp
 module Middleware
 
 class Obfuscator < Sinatra::Base
 
-  def initialize app
-    super
-    @ob = Webhelp::Obfuscation::DocumentObfuscator.new
-  end
-
   after do
+    ob = Webhelp::Obfuscation::DocumentObfuscator.new
     begin
       case response.content_type
-        when %r{^text/html} then body @ob.obfuscate body.join
+        when %r{^text/html} then body ob.obfuscate body.join
       end
-    rescue ObfuscationInvalidityError => e
+    rescue Webhelp::Obfuscation::ObfuscationInvalidityError => e
       halt 500, e.message
     end
   end#after

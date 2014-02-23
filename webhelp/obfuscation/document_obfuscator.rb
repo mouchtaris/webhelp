@@ -1,5 +1,3 @@
-using Util::StringRefinements
-
 module Webhelp
 module Obfuscation
 
@@ -86,53 +84,53 @@ class DocumentObfuscator
 
   def self.obfuscate_except_for_tags(tags_names:, obfuscate:, deobfuscate:, source:)
     sections  =
-        ObfuscatorMiddleware.separate_tags_sections(tags_names, source).
+        DocumentObfuscator.separate_tags_sections(tags_names, source).
         map_nth 0 do |non_tag| non_tag and obfuscate.call non_tag end
     if error_body =
-        ObfuscatorMiddleware.ensure_obfuscation_validity(
+        DocumentObfuscator.ensure_obfuscation_validity(
             source, sections, 0, deobfuscate)
       then
         raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
             Haml::Helpers.html_escape Hash(tags_names: tags_names).to_yaml}\n-->"
     end
-    obfuscated = ObfuscatorMiddleware.join_sections sections
+    obfuscated = DocumentObfuscator.join_sections sections
     obfuscated
   end
 
-  def obfuscate_only_tag(tag_name:, obfuscate:, deobfuscate:, source:)
+  def self.obfuscate_only_tag(tag_name:, obfuscate:, deobfuscate:, source:)
     sections  =
-        ObfuscatorMiddleware.separate_tags_sections([tag_name], source).
+        DocumentObfuscator.separate_tags_sections([tag_name], source).
         map_nth 1 do |tag| tag and obfuscate.call tag end
     if error_body =
-        ObfuscatorMiddleware.ensure_obfuscation_validity(
+        DocumentObfuscator.ensure_obfuscation_validity(
             source, sections, 1, deobfuscate)
       then
         raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
             Haml::Helpers.html_escape Hash(tag_name: tag_name).to_yaml}\n-->"
     end
-    obfuscated = ObfuscatorMiddleware.join_sections sections
+    obfuscated = DocumentObfuscator.join_sections sections
     obfuscated
   end
 
   def initialize
     super
-    @ob = Webhelp::Obfuscator.new
+    @ob = Webhelp::Obfuscation::Obfuscator.new
   end
 
   def obfuscate source
-    ob_html =
+    ob_html = DocumentObfuscator.
     obfuscate_except_for_tags(tags_names:   [:style, :script]             ,
                               obfuscate:    @ob.method(:obfuscate_html    ),
                               deobfuscate:  @ob.method(:deobfuscate_html  ),
                               source:       source                        ,
                               )
-    ob_html_css =
+    ob_html_css = DocumentObfuscator.
     obfuscate_only_tag(       tag_name:     :style                        ,
                               obfuscate:    @ob.method(:obfuscate_css     ),
                               deobfuscate:  @ob.method(:deobfuscate_css   ),
                               source:       ob_html                       ,
                               )
-    ob_html_css_js =
+    ob_html_css_js = DocumentObfuscator.
     obfuscate_only_tag(       tag_name:     :script                       ,
                               obfuscate:    @ob.method(:obfuscate_js      ),
                               deobfuscate:  @ob.method(:deobfuscate_js    ),

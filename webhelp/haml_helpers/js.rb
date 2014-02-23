@@ -32,7 +32,7 @@ module Js
       # @param id [:Opal, :JQuery]
       #
       def js_import id
-        source_basename = const_get id
+        source_basename = Js.const_get id
         source_pathname = config.public_dir + source_basename
         source          = source_pathname.read
         "<script>#{source}</script>"

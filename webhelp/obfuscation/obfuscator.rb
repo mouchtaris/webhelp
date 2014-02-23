@@ -1,6 +1,3 @@
-using Util::UnboundMethodRefinements
-using Util::ArraySortRefinements
-
 module Webhelp
 module Obfuscation
 
