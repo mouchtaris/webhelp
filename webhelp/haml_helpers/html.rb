@@ -16,7 +16,7 @@ module Html
     url         = rcmapper.translate rc_id
     width       = imagemetadata.width rc_id
     height      = imagemetadata.height rc_id
-    element_id  = element_id || imageidmanager.next!
+    element_id  = id || imageidmanager.next!
     htmlimg.img element_id, url, width, height
   end
 

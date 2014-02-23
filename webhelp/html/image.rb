@@ -4,7 +4,7 @@ module Html
 # Html generation helpers for images.
 class Image
 
-  CssRulespacePrefx = "_#{AutoLoader.class_name_to_file_name self.class.name}_"
+  CssRulespacePrefx = "_#{AutoLoader.class_name_to_file_name name}_"
   module CssRulespace
     Image = CssRulespacePrefx + 'image'
   end
@@ -92,7 +92,7 @@ class Image
     @gen2.morecss imgid, Image.css_for_image(url, width, height)
     # add more-css for hovering
     if with_hover then
-      hover_id  = Image._get_hover_id hover_selector_prefix, id
+      hover_id  = Image._get_hover_id hover_selector_prefix, imgid
       hover_url = rcmapper.translate :"#{name}_hover"
       @gen2.morecss hover_id, Image.css_for_image_hover(hover_url)
     end
@@ -102,7 +102,7 @@ class Image
   #     get_morecss[imgid] << "@include #{extra_mixin}"
   #   end
   # end
-    haml_code = "#{imgid}.image{attrs}"
+    haml_code = "#{imgid}.#{CssRulespace::Image}{attrs}"
     @hamler.haml haml_code, locals: {attrs: attrs}
   end
 
