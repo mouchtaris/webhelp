@@ -23,7 +23,7 @@ module Opal
           when String then id
           else raise ArgumentError.new id.inspect
         end
-    Opal.compile source
+    ::Opal.compile source
   end
 
 end#module Opal

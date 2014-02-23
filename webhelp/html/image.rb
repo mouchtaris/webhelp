@@ -13,14 +13,14 @@ class Image
     background-repeat   no-repeat
     background-position top\ center
     display             inline-block
-  ]
+  ].each_slice(2).to_a.deep_freeze
 
   # Return a CSS array with all rules
   # for giving a block an image background.
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
   def self.css_for_image url, width, height
-    %w[
+    %W[
       background-image     url('#{url}')
       width                #{width}px
       height               #{height}px
@@ -33,7 +33,7 @@ class Image
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
   def self.css_for_image_hover url
-    %w[
+    %W[
       background-image     url('#{url}')
     ].each_slice(2).to_a
   end
@@ -85,11 +85,11 @@ class Image
     with_hover = false, hover_selector_prefix = nil,
     attrs = {}
   )
-    id = :"##{id or @hamler.html_escape img_id_manager[name]}"
+    imgid = :"##{id or @hamler.html_escape img_id_manager[name]}"
     # add common rule for all image-background elements
     @gen2.morecss :".#{CssRulespace::Image}", CommonCssForImage
     # add css for this specific element
-    @gen2.morecss id, Image.css_for_image(url, width, height)
+    @gen2.morecss imgid, Image.css_for_image(url, width, height)
     # add more-css for hovering
     if with_hover then
       hover_id  = Image._get_hover_id hover_selector_prefix, id

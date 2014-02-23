@@ -12,7 +12,7 @@ class Gen2
   # @param selector [Symbol] the css selector (literally)
   # @param rules [#each => (String, String)] an array
   #     of property - value pairs
-  def morecss selector, rules
+  def morecss selector = nil, rules = nil
     if selector or rules then
       require_symbol{:selector}
       require_respond_to(:each){:rules}

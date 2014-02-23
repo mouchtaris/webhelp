@@ -4,7 +4,7 @@ module HamlHelpers
 module Html
   extend Util::InstanceRequirementsChecker
 
-  InstanceRequirements = %i[ rcmapper imgmetadata imgidmanager htmlimg ]
+  InstanceRequirements = %i[ rcmapper imagemetadata imageidmanager htmlimg ]
 
   # Produce html code for an image element.
   #
@@ -14,9 +14,9 @@ module Html
   #   html element
   def img rc_id, id: nil
     url         = rcmapper.translate rc_id
-    width       = imgmetadata.width rc_id
-    height      = imgmetadata.height rc_id
-    element_id  = element_id || imgidmanager.next!
+    width       = imagemetadata.width rc_id
+    height      = imagemetadata.height rc_id
+    element_id  = element_id || imageidmanager.next!
     htmlimg.img element_id, url, width, height
   end
 
