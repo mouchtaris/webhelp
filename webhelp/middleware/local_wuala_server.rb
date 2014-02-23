@@ -3,8 +3,13 @@ module Middleware
 
 class LocalWualaServer < Sinatra::Base
 
+  def initialize app, root_app
+    super app
+    @root_app = root_app
+  end
+
   get '/w/:id.:ext' do |id, ext|
-    if local_path = app.rcwualalocal.local_path(id)
+    if local_path = @root_app.rcwualalocal.local_path(id)
       then
         if File.exist? local_path
           then send_file local_path
