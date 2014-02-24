@@ -39,6 +39,23 @@ module Js
       end
     end#module Test
 
+    module Production
+      def js_import id
+        case id
+          when :JQuery then
+            url = Webhelp::Vendor::JQuery::Url.to_s.gsub '|', '\\|'
+            haml "%script{src: %Q|#{url}|}"
+          when :JQueryMin then
+            url = Webhelp::Vendor::JQuery::UrlMin.to_s.gsub '|', '\\|'
+            haml "%script{src: %Q|#{url}|}"
+          when :Opal then
+            "<script>#{opalcore}</script>"
+          when :OpalMin then
+            "<script>#{opalcoremin}</script>"
+        end
+      end
+    end
+
     module Default
       define_method :js_import__test, Test.instance_method(:js_import)
       def js_import id
