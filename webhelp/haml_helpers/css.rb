@@ -30,11 +30,22 @@ module Css
       #
       # The app is expected to know how to serve _id_.css.
       #
-      # @param id [Symbol] css module's id
+      # @param ids [Symbol] css module's ids
       #
-      def css_import id
-        haml  ":sass\n" +
-              "  @import url('#{id}.css')"
+      def css_import *ids
+        imports = ids.
+            map do |id| "  @import url('#{id}.css');" end.
+            join "\n"
+        haml_code = ":scss\n#{imports}\n"
+        if block_given?
+          custom = yield.
+              each_line.
+              map(&'  '.method(:+)).
+              to_a.
+              join
+          haml_code += custom
+        end
+        haml haml_code
       end
     end#module Development
 
@@ -46,13 +57,23 @@ module Css
       #     haml :"#{id}_css"
       # (now even practically).
       #
-      # @param id [Symbol]
+      # @param ids [Symbol]
       #
-      def css_import id
-        style = haml :"#{id}_css"
-        formatted_style = style.each_line.
+      def css_import *ids
+        style = ids.
+            map do |id| haml :"#{id}_css" end.
+            join "\n"
+        formatted_style = style.
+            each_line.
             map do |line| "  #{line.chomp}\n" end.
             join
+        if block_given? then
+          custom = yield.
+              each_line.
+              map do |line| "  #{line.chomp}\n" end.
+              join
+          formatted_style += custom
+        end
         haml  ":scss\n" +
               "#{formatted_style}"
       end
