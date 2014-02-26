@@ -42,32 +42,6 @@ module Js
       end
     end#module Test
 
-    module Production
-      def js_import *ids
-        srcs = []
-        source = ''
-        ids.each do |id|
-          case id
-            when :JQuery then
-              url = Webhelp::Vendor::JQuery::Url.to_s.gsub '|', '\\|'
-              srcs << url
-            when :JQueryMin then
-              url = Webhelp::Vendor::JQuery::UrlMin.to_s.gsub '|', '\\|'
-              srcs << url
-            when :Opal then
-              source << opalcore
-            when :OpalMin then
-              source << opalcoremin
-          end
-        end
-        "#{
-          srcs.map do |src|
-            haml "%script{src: %Q|#{src}|}"
-          end.join
-        }<script>#{source}</script>"
-      end
-    end
-
     module Default
       define_method :js_import__test, Test.instance_method(:js_import)
       # @param ids [:Opal, :JQuery]
