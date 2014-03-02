@@ -1,6 +1,9 @@
 module Webhelp
 module Db
 
+class ImageMetadataException < RuntimeError
+end
+
 class ImageMetadata
 
   # Generate a {Util::YamlLoader} which load the
@@ -31,7 +34,7 @@ class ImageMetadata
   end
 
   def entry name
-    image?(name) || (raise "No entry for #{name}"; nil)
+    image?(name) or (raise ImageMetadataException.new("No entry for #{name}"); nil)
   end
 
   def size name
