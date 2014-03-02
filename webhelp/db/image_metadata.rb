@@ -54,6 +54,16 @@ class ImageMetadata
     size(name)[1]
   end
 
+  def width? name
+    width name
+  rescue ImageMetadataException
+  end
+
+  def height? name
+    height name
+  rescue ImageMetadataException
+  end
+
   private
   def signature_for name
     @sha.hexdigest name.to_s
