@@ -4,27 +4,31 @@ module Html
 # Html generation helpers for images.
 class Image
 
+  def self.make_assoc_css whitespace_separated_array
+    whitespace_separated_array.each_slice(2).to_a
+  end
+
   CssRulespacePrefx = "_#{AutoLoader.class_name_to_file_name name}_"
   module CssRulespace
     Image = CssRulespacePrefx + 'image'
   end
 
-  CommonCssForImage = %w[
+  CommonCssForImage = make_assoc_css(%w[
     background-repeat   no-repeat
     background-position top\ center
     display             inline-block
-  ].each_slice(2).to_a.deep_freeze
+  ]).deep_freeze
 
   # Return a CSS array with all rules
   # for giving a block an image background.
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
   def self.css_for_image url, width, height
-    %W[
+    make_assoc_css %W[
       background-image     url('#{url}')
       width                #{width}px
       height               #{height}px
-    ].each_slice(2).to_a
+    ]
   end
 
   # Return a CSS array with all rules
@@ -33,9 +37,9 @@ class Image
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
   def self.css_for_image_hover url
-    %W[
+    make_assoc_css %W[
       background-image     url('#{url}')
-    ].each_slice(2).to_a
+    ]
   end
 
   # Return the hover id for an image-background
@@ -54,10 +58,14 @@ class Image
   end
 
   # @param gen2 [Gen2]
-  # @param hamler [#haml, #html_escape]
+  # @param hamler [#haml]
   def initialize gen2, hamler
-    @gen2     = gen2
-    @hamler   = hamler
+    @gen2             = gen2
+    @hamler           = hamler
+  end
+
+  def add_common_css_for_images
+    @gen2.morecss :".#{CssRulespace::Image}", CommonCssForImage
   end
 
   # Generates an html element with the appropriate class
@@ -85,9 +93,8 @@ class Image
     with_hover = false, hover_selector_prefix = nil,
     attrs = {}
   )
-    imgid = :"##{id or @hamler.html_escape img_id_manager[name]}"
-    # add common rule for all image-background elements
-    @gen2.morecss :".#{CssRulespace::Image}", CommonCssForImage
+    imgid = :"##{::Haml::Helpers.html_escape id}"
+    add_common_css_for_images
     # add css for this specific element
     @gen2.morecss imgid, Image.css_for_image(url, width, height)
     # add more-css for hovering
@@ -103,7 +110,24 @@ class Image
   #   end
   # end
     haml_code = "#{imgid}.#{CssRulespace::Image}{attrs}"
-    @hamler.haml haml_code, locals: {attrs: attrs}
+    @hamler.haml haml_code, scope: Struct.new(:attrs).new(attrs)
+  end
+
+  # "Generate" an image, either with css or as
+  # an actual image file.
+  #
+  # @param width [Fixnum?]
+  # @param height [Fixnum?]
+  def generate id, width = nil, height = nil, attrs: {}
+    imgid = :"##{::Haml::Helpers.html_escape id}"
+    add_common_css_for_images
+    assoc_css = []
+    assoc_css << %W[ width  #{width }px ] if width
+    assoc_css << %W[ height #{height}px ] if height
+    assoc_css << ['background', 'radial-gradient(ellipse at center, #cb60b3 0%, #ad1283 50%, #de47ac 100%)']
+    @gen2.morecss imgid, assoc_css
+    haml_code = "#{imgid}.#{CssRulespace::Image}{attrs}"
+    @hamler.haml haml_code, scope: Struct.new(:attrs).new(attrs)
   end
 
 end#module Image
