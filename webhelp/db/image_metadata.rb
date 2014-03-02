@@ -24,8 +24,13 @@ class ImageMetadata
   end
   private :new_yaml_loader
 
+  def reload!
+    @db = @yaml_reloader.reload.deep_freeze
+  end
+
   def initialize *db_files
-    @db = new_yaml_loader(db_files).reload.deep_freeze
+    @yaml_reloader = new_yaml_loader db_files
+    reload!
     @sha = Digest::SHA512.new
   end
 
