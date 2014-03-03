@@ -24,30 +24,18 @@ class Image
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
   def self.css_for_image url, width, height, position, offset_x, offset_y
-    assoc_css = make_assoc_css %W[
-      background-image     url('#{url}')
-      width                #{width}px
-      height               #{height}px
-    ]
+    assoc_css = []
+    assoc_css << %W[background-image  url('#{url}') ] if url
+    assoc_css << %W[width             #{width}px    ] if width
+    assoc_css << %W[height            #{height}px   ] if height
     if position then
       assoc_css << %W[background-position #{position}]
     elsif offset_x or offset_y then
       bgpos = "left #{offset_x}px" if offset_x
-      bgpos += " top -#{offset_y}px" if offset_y
+      bgpos += " top #{offset_y}px" if offset_y
       assoc_css << %W[background-position #{bgpos}]
     end
     assoc_css
-  end
-
-  # Return a CSS array with all rules
-  # for giving a block an image background,
-  # on mouse hover-over.
-  # @return [Array(String, String)]
-  #     [ [prop, value], ... ]
-  def self.css_for_image_hover url
-    make_assoc_css %W[
-      background-image     url('#{url}')
-    ]
   end
 
   # Return the hover id for an image-background
@@ -102,7 +90,9 @@ class Image
   def img(attrs = {},
     id:, url:, width:, height:, position:,
     offset_x: nil, offset_y: nil,
-    with_hover_url: nil, hover_selector_prefix: nil
+    with_hover_url: nil, hover_selector_prefix: nil,
+    hover_width: nil, hover_height: nil,
+    hover_offset_x: nil, hover_offset_y: nil
   )
     imgid = :"##{::Haml::Helpers.html_escape id}"
     add_common_css_for_images
@@ -112,7 +102,12 @@ class Image
     # add more-css for hovering
     if with_hover_url then
       hover_id  = Image._get_hover_id hover_selector_prefix, imgid
-      @gen2.morecss hover_id, Image.css_for_image_hover(with_hover_url)
+      with_hover_url = nil if with_hover_url == url
+      hover_width = nil if hover_width == width
+      hover_height = nil if hover_height == height
+      @gen2.morecss hover_id,
+          Image.css_for_image(with_hover_url, hover_width, hover_height, nil,
+              hover_offset_x, hover_offset_y)
     end
     # add sass extra mixins
   # if extra_mixins then

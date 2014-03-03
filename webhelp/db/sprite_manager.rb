@@ -43,8 +43,24 @@ class SpriteManager
   rescue SpriteManagerException
   end
 
+  def value val
+    case val
+      when Integer then val
+      when String then eval val
+      else raise ArgumentError.new "Invalid value #{val.inspect}"
+    end
+  end
+  private :value
+
+  def entry_value id, kw
+    value entry(id)[kw]
+  rescue ArgumentError
+    raise ArgumentError.new "Invalid value #{entry(id)[kw].inspect} for #{id.inspect}[#{kw.inspect}]"
+  end
+  private :entry_value
+
   def width id
-    entry(id)[:width]
+    entry_value id, :width
   end
 
   def width? id
@@ -53,7 +69,7 @@ class SpriteManager
   end
 
   def height id
-    entry(id)[:height]
+    entry_value id, :height
   end
 
   def height? id
@@ -62,7 +78,7 @@ class SpriteManager
   end
 
   def x id
-    entry(id)[:x]
+    entry_value id, :x
   end
   alias offset_x x
 
@@ -73,7 +89,7 @@ class SpriteManager
   alias offset_x? x?
 
   def y id
-    entry(id)[:y]
+    entry_value id, :y
   end
   alias offset_y y
 

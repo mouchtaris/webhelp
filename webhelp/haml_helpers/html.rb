@@ -18,10 +18,10 @@ module Html
     result = [(id or imageidmanager.next!)]
     if spritemanager.sprite? img_id then
       result.concat [
-        (width    or spritemanager.width      img_id  ),
-        (height   or spritemanager.height     img_id  ),
-        (offset_x or spritemanager.offset_x   img_id  ),
-        (offset_y or spritemanager.offset_y   img_id  ),
+        (width    or   spritemanager.width    img_id  ),
+        (height   or   spritemanager.height   img_id  ),
+        (offset_x or -(spritemanager.offset_x img_id) ),
+        (offset_y or -(spritemanager.offset_y img_id) ),
       ]
     else
       rc_id = __rc_id img_id
@@ -48,11 +48,21 @@ module Html
         ### TODO make params signature and reuse same element id for identical requests
         rc_id       = __rc_id img_id
         url         = rcmapper.translate rc_id
-        hover_rc_id = __hover_rc_id img_id
-        hover_url   = with_hover && (rcmapper.translate hover_rc_id)
         eid, ew, eh, eoffx, eoffy = __element img_id, id, width, height, offset_x, offset_y
+
+        hw, hh, hoffx, hoffy = nil
+        hover_url = nil
+        if (h_img_id = with_hover && :"#{img_id}_hover") then
+          hover_rc_id = __hover_rc_id img_id
+          hover_url   = rcmapper.translate hover_rc_id
+          _, hw, hh, hoffx, hoffy = __element h_img_id, eid, nil, nil, nil, nil
+          PP.pp [_, hw, hh, hoffx, hoffy], STDERR
+        end
+        #PP.pp [with_hover, h_img_id, hw, hh, hoffx, hoffy], STDERR
         htmlimg.img attrs, id: eid, url: url, width: ew, height: eh, position: position,
-                    with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy
+                    with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy,
+                    hover_width: hw, hover_height: hh, hover_offset_x: hoffx,
+                    hover_offset_y: hoffy
       end
 
     end
