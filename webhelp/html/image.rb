@@ -23,12 +23,14 @@ class Image
   # for giving a block an image background.
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
-  def self.css_for_image url, width, height
-    make_assoc_css %W[
+  def self.css_for_image url, width, height, position
+    assoc_css = make_assoc_css %W[
       background-image     url('#{url}')
       width                #{width}px
       height               #{height}px
     ]
+    assoc_css << %W[background-position position] if position
+    assoc_css
   end
 
   # Return a CSS array with all rules
@@ -82,21 +84,22 @@ class Image
   # @param width [Fixnum] image width in pixels
   # @param height [Fixnum] image height in pixels
   # @param url [String] the image url
+  # @param position [String?] image background-position
+  #     css property (defaults to top center)
   # @param with_hover [Boolean] make the element change
   #     image background on hover
   # @param hover_selector_prefix [Symbol, nil] the hover
   #     condition css selector (prepended to id)
   # @return [String] an html piece of code with the
   #     generated element
-  def img(
-    id, url, width, height,
-    with_hover = false, hover_selector_prefix = nil,
-    attrs = {}
+  def img(attrs = {},
+    id:, url:, width:, height:, position:,
+    with_hover: false, hover_selector_prefix: nil
   )
     imgid = :"##{::Haml::Helpers.html_escape id}"
     add_common_css_for_images
     # add css for this specific element
-    @gen2.morecss imgid, Image.css_for_image(url, width, height)
+    @gen2.morecss imgid, Image.css_for_image(url, width, height, position)
     # add more-css for hovering
     if with_hover then
       hover_id  = Image._get_hover_id hover_selector_prefix, imgid

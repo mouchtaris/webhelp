@@ -24,10 +24,11 @@ module Html
       #   resource id
       # @param id [Symbol?] the html id of the generated
       #   html element
-      def img rc_id, id: nil, width: nil, height: nil
+      def img rc_id, id: nil, width: nil, height: nil, position: nil, attrs: {}
         url = rcmapper.translate rc_id
         element_id, element_width, element_height = __element rc_id, id, width, height
-        htmlimg.img element_id, url, element_width, element_height
+        htmlimg.img attrs, id: element_id, url: url, width: element_width,
+                    height: element_height
       end
 
     end
@@ -39,11 +40,11 @@ module Html
       # Same as {Default#img} except that provides a replacement
       # "image" element in case the image rc is not found.
       #
-      def img rc_id, id: nil, width: nil, height: nil
-        __img__default rc_id, id: id, width: width, height: height
+      def img rc_id, id: nil, width: nil, height: nil, position: nil, attrs: {}
+        __img__default rc_id, id: id, width: width, height: height, position: nil
       rescue IndexError # rc not found
         element_id, element_width, element_height = __element rc_id, id, width, height
-        htmlimg.generate element_id, element_width, element_height
+        htmlimg.generate element_id, element_width, element_height, attrs: attrs
       end
 
     end
