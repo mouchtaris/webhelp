@@ -7,21 +7,21 @@ module Html
   InstanceRequirements = %i[ rcmapper imagemetadata imageidmanager htmlimg spritemanager ]
 
   def __rc_id img_id
-    spritemanager.rc img_id or img_id
+    spritemanager.rc? img_id or img_id
   end
 
   def __hover_rc_id img_id
-    spritemanager.hover_rc img_id or :"#{__rc_id img_id}_hover"
+    spritemanager.hover_rc? img_id or :"#{__rc_id img_id}_hover"
   end
 
   def __element img_id, id, width, height, offset_x, offset_y
-    result = [id or imageidmanager.next!]
+    result = [(id or imageidmanager.next!)]
     if spritemanager.sprite? img_id then
       result.concat [
-        (width    or spritemanager.width    img_id  ),
-        (height   or spritemanager.height   img_id  ),
-        (offset_x or spritemanager.offset_x img_id  ),
-        (offset_y or spritemanager.offset_y img_id  ),
+        (width    or spritemanager.width      img_id  ),
+        (height   or spritemanager.height     img_id  ),
+        (offset_x or spritemanager.offset_x   img_id  ),
+        (offset_y or spritemanager.offset_y   img_id  ),
       ]
     else
       rc_id = __rc_id img_id
@@ -50,9 +50,8 @@ module Html
         url         = rcmapper.translate rc_id
         hover_rc_id = __hover_rc_id img_id
         hover_url   = with_hover && (rcmapper.translate hover_rc_id)
-        eid, ew, eh, eoffx, eoofy = __element img_id, id, width, height, offset_x, offset_y
-        htmlimg.img attrs, id: element_id, url: url, width: element_width,
-                    height: element_height, position: position,
+        eid, ew, eh, eoffx, eoffy = __element img_id, id, width, height, offset_x, offset_y
+        htmlimg.img attrs, id: eid, url: url, width: ew, height: eh, position: position,
                     with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy
       end
 
@@ -70,7 +69,7 @@ module Html
         __img__default img_id, id: id, width: width, height: height, position: position,
             with_hover: with_hover, attrs: attrs, offset_y: offset_y, offset_x: offset_x
       rescue IndexError => e # rc not found
-        element_id, element_width, element_height = __element rc_id, id, width, height
+        element_id, element_width, element_height = __element img_id, id, width, height, nil, nil
         htmlimg.generate element_id, element_width, element_height, attrs: attrs, text: e
       end
 

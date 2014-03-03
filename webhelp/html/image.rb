@@ -32,8 +32,8 @@ class Image
     if position then
       assoc_css << %W[background-position #{position}]
     elsif offset_x or offset_y then
-      bgpos = "#{offset_x}px" if offset_x
-      bgpos += " #{offset_y}px" if offset_y
+      bgpos = "left #{offset_x}px" if offset_x
+      bgpos += " top -#{offset_y}px" if offset_y
       assoc_css << %W[background-position #{bgpos}]
     end
     assoc_css
