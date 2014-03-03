@@ -28,7 +28,7 @@ module Html
         url = rcmapper.translate rc_id
         element_id, element_width, element_height = __element rc_id, id, width, height
         htmlimg.img attrs, id: element_id, url: url, width: element_width,
-                    height: element_height
+                    height: element_height, position: position
       end
 
     end
