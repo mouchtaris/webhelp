@@ -4,14 +4,33 @@ module HamlHelpers
 module Html
   extend Util::InstanceRequirementsChecker
 
-  InstanceRequirements = %i[ rcmapper imagemetadata imageidmanager htmlimg ]
+  InstanceRequirements = %i[ rcmapper imagemetadata imageidmanager htmlimg spritemanager ]
 
-  def __element rc_id, id, width, height
-    [
-      (id     or imageidmanager.next!         ),
-      (width  or imagemetadata.width? rc_id   ),
-      (height or imagemetadata.height? rc_id  ),
-    ]
+  def __rc_id img_id
+    spritemanager.rc img_id or img_id
+  end
+
+  def __hover_rc_id img_id
+    spritemanager.hover_rc img_id or :"#{__rc_id img_id}_hover"
+  end
+
+  def __element img_id, id, width, height, offset_x, offset_y
+    result = [id or imageidmanager.next!]
+    if spritemanager.sprite? img_id then
+      result.concat [
+        (width    or spritemanager.width    img_id  ),
+        (height   or spritemanager.height   img_id  ),
+        (offset_x or spritemanager.offset_x img_id  ),
+        (offset_y or spritemanager.offset_y img_id  ),
+      ]
+    else
+      rc_id = __rc_id img_id
+      result.concat [
+        (width  or imagemetadata.width? rc_id   ),
+        (height or imagemetadata.height? rc_id  ),
+      ]
+    end
+    result
   end
 
   module Environments
@@ -20,15 +39,21 @@ module Html
 
       # Produce html code for an image element.
       #
-      # @param rc_id [Symbol] the logical name of the image
-      #   resource id
+      # @param img_id [Symbol] the logical name of the image
+      #   id -- could be a sprite or an actual rc id
       # @param id [Symbol?] the html id of the generated
       #   html element
-      def img rc_id, id: nil, width: nil, height: nil, position: nil, attrs: {}
-        url = rcmapper.translate rc_id
-        element_id, element_width, element_height = __element rc_id, id, width, height
+      def img img_id, id: nil, width: nil, height: nil, position: nil, attrs: {},
+          with_hover: nil, offset_x: nil, offset_y: nil
+        ### TODO make params signature and reuse same element id for identical requests
+        rc_id       = __rc_id img_id
+        url         = rcmapper.translate rc_id
+        hover_rc_id = __hover_rc_id img_id
+        hover_url   = with_hover && (rcmapper.translate hover_rc_id)
+        eid, ew, eh, eoffx, eoofy = __element img_id, id, width, height, offset_x, offset_y
         htmlimg.img attrs, id: element_id, url: url, width: element_width,
-                    height: element_height, position: position
+                    height: element_height, position: position,
+                    with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy
       end
 
     end
@@ -40,11 +65,13 @@ module Html
       # Same as {Default#img} except that provides a replacement
       # "image" element in case the image rc is not found.
       #
-      def img rc_id, id: nil, width: nil, height: nil, position: nil, attrs: {}
-        __img__default rc_id, id: id, width: width, height: height, position: nil
-      rescue IndexError # rc not found
+      def img img_id, id: nil, width: nil, height: nil, position: nil, attrs: {},
+          with_hover: nil, offset_x: nil, offset_y: nil
+        __img__default img_id, id: id, width: width, height: height, position: position,
+            with_hover: with_hover, attrs: attrs, offset_y: offset_y, offset_x: offset_x
+      rescue IndexError => e # rc not found
         element_id, element_width, element_height = __element rc_id, id, width, height
-        htmlimg.generate element_id, element_width, element_height, attrs: attrs
+        htmlimg.generate element_id, element_width, element_height, attrs: attrs, text: e
       end
 
     end

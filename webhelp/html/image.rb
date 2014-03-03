@@ -23,13 +23,19 @@ class Image
   # for giving a block an image background.
   # @return [Array(String, String)]
   #     [ [prop, value], ... ]
-  def self.css_for_image url, width, height, position
+  def self.css_for_image url, width, height, position, offset_x, offset_y
     assoc_css = make_assoc_css %W[
       background-image     url('#{url}')
       width                #{width}px
       height               #{height}px
     ]
-    assoc_css << %W[background-position position] if position
+    if position then
+      assoc_css << %W[background-position #{position}]
+    elsif offset_x or offset_y then
+      bgpos = "#{offset_x}px" if offset_x
+      bgpos += " #{offset_y}px" if offset_y
+      assoc_css << %W[background-position #{bgpos}]
+    end
     assoc_css
   end
 
@@ -86,25 +92,27 @@ class Image
   # @param url [String] the image url
   # @param position [String?] image background-position
   #     css property (defaults to top center)
-  # @param with_hover [Boolean] make the element change
-  #     image background on hover
+  # @param with_hover_url [String] make the element change
+  #     image background on hover, using the image at
+  #     _with_hover_url_
   # @param hover_selector_prefix [Symbol, nil] the hover
   #     condition css selector (prepended to id)
   # @return [String] an html piece of code with the
   #     generated element
   def img(attrs = {},
     id:, url:, width:, height:, position:,
-    with_hover: false, hover_selector_prefix: nil
+    offset_x: nil, offset_y: nil,
+    with_hover_url: nil, hover_selector_prefix: nil
   )
     imgid = :"##{::Haml::Helpers.html_escape id}"
     add_common_css_for_images
     # add css for this specific element
-    @gen2.morecss imgid, Image.css_for_image(url, width, height, position)
+    @gen2.morecss imgid,
+        Image.css_for_image(url, width, height, position, offset_x, offset_y)
     # add more-css for hovering
-    if with_hover then
+    if with_hover_url then
       hover_id  = Image._get_hover_id hover_selector_prefix, imgid
-      hover_url = rcmapper.translate :"#{name}_hover"
-      @gen2.morecss hover_id, Image.css_for_image_hover(hover_url)
+      @gen2.morecss hover_id, Image.css_for_image_hover(with_hover_url)
     end
     # add sass extra mixins
   # if extra_mixins then
@@ -121,7 +129,7 @@ class Image
   #
   # @param width [Fixnum?]
   # @param height [Fixnum?]
-  def generate id, width = nil, height = nil, attrs: {}
+  def generate id, width = nil, height = nil, attrs: {}, text: nil
     imgid = :"##{::Haml::Helpers.html_escape id}"
     add_common_css_for_images
     assoc_css = []
@@ -130,6 +138,7 @@ class Image
     assoc_css << ['background', 'radial-gradient(ellipse at center, #cb60b3 0%, #ad1283 50%, #de47ac 100%)']
     @gen2.morecss imgid, assoc_css
     haml_code = "#{imgid}.#{CssRulespace::Image}{attrs}"
+    haml_code += "\\ #{text}" if text
     @hamler.haml haml_code, scope: Struct.new(:attrs).new(attrs)
   end
 
