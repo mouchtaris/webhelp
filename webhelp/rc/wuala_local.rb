@@ -37,7 +37,7 @@ class WualaLocal
       sig = signature_for original
       ext = File.extname original.path
       update_db sig, url_for(original)
-      "w/#{sig}#{ext}"
+      "/w/#{sig}#{ext}"
     end
   end
 

@@ -34,7 +34,7 @@ module Css
       #
       def css_import *ids
         imports = ids.
-            map do |id| "  @import url('#{id}.css');" end.
+            map do |id| "  @import url('/#{id}.css');" end.
             join "\n"
         haml_code = ":scss\n#{imports}\n"
         if block_given?

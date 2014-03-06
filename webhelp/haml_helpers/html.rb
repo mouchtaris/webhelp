@@ -56,9 +56,7 @@ module Html
           hover_rc_id = __hover_rc_id img_id
           hover_url   = rcmapper.translate hover_rc_id
           _, hw, hh, hoffx, hoffy = __element h_img_id, eid, nil, nil, nil, nil
-          PP.pp [_, hw, hh, hoffx, hoffy], STDERR
         end
-        #PP.pp [with_hover, h_img_id, hw, hh, hoffx, hoffy], STDERR
         htmlimg.img attrs, id: eid, url: url, width: ew, height: eh, position: position,
                     with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy,
                     hover_width: hw, hover_height: hh, hover_offset_x: hoffx,
