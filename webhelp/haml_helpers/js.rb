@@ -40,7 +40,7 @@ module Js
     end#module Development
 
     module Test
-      def js_import *ids
+      def __js_import ids, minify
         source =
             ids.map do |id|
               source_basename = Js.const_get id
@@ -49,16 +49,21 @@ module Js
             end.
             join
         source += yield if block_given?
+        source = Webhelp::Minify::Javascript.minify source if minify
         "<script>#{source}</script>"
+      end
+
+      def js_import *ids
+        __js_import ids, false
       end
     end#module Test
 
     module Default
-      define_method :js_import__test, Test.instance_method(:js_import)
+      include Test
       # @param ids [:Opal, :JQuery]
       #
       def js_import *ids, &block
-        js_import__test *ids.map { |id| :"#{id}Min" }, &block
+        __js_import ids.map { |id| :"#{id}Min" }, true, &block
       end
     end#module Default
 
