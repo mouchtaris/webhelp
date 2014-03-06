@@ -24,7 +24,7 @@ module Js
         js_srcs =
             ids.map do |id|
               src = Js.const_get(id).gsub '|', '\|'
-              "%script{src: %Q|#{src}|}"
+              "%script{src: %Q|/#{src}|}"
             end.
             join "\n"
         literal_lines =
