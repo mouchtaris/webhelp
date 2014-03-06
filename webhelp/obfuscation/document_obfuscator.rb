@@ -40,12 +40,15 @@ class DocumentObfuscator
   #     of the section element which has undergone obfuscation
   # @param deobfuscate [#call([String])] the
   #     deobfuscation-on-string operation
+  # @param during [String] extra information about at which
+  #     point the obfuscation (error) occurs
   # @return [nil | String] nil when everything is fine, an
   #     html body describing the error else.
   def self.ensure_obfuscation_validity(original_source,
     sections,
     obfuscated_section_index,
-    deobfuscate
+    deobfuscate,
+    during
   )
     deobfuscated_source = join_sections \
         sections.map { |pair|
@@ -56,7 +59,12 @@ class DocumentObfuscator
     unless deobfuscated_source == original_source then
       require 'diffy'
       require 'haml'
-      diff = Diffy::Diff.new(original_source, deobfuscated_source)
+      require 'pp'
+      diff = Diffy::Diff.new(original_source, deobfuscated_source,
+          include_diff_info: true,
+          include_plus_and_minus_in_html: true,
+          context: 20,
+          )
       body =  "!!!\n"                               +
               "%html\n"                             +
               "  %head\n"                           +
@@ -75,6 +83,12 @@ class DocumentObfuscator
               "       }\n"                          +
               "  %body\n"                           +
               "    %h1 Obfuscation Error\n"         +
+              "    %p\n"                            +
+              "      During:\n"                     +
+              "      %pre\n"                        +
+              "        :plain\n"                    +
+              PP.pp(during, '').split(/[\n\r]+/).map { |line|
+              "          #{line}\n" }.join          +
               "    %p Please check the diff below\n"+
               diff.to_s(:html).split(/[\n\r]+/).map { |line|
               "    \\#{line}\n" }.join
@@ -88,10 +102,9 @@ class DocumentObfuscator
         map_nth 0 do |non_tag| non_tag and obfuscate.call non_tag end
     if error_body =
         DocumentObfuscator.ensure_obfuscation_validity(
-            source, sections, 0, deobfuscate)
+            source, sections, 0, deobfuscate, {tags_names: tags_names})
       then
-        raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
-            Haml::Helpers.html_escape Hash(tags_names: tags_names).to_yaml}\n-->"
+        raise ObfuscationInvalidityError.new "#{error_body}"
     end
     obfuscated = DocumentObfuscator.join_sections sections
     obfuscated
@@ -103,10 +116,9 @@ class DocumentObfuscator
         map_nth 1 do |tag| tag and obfuscate.call tag end
     if error_body =
         DocumentObfuscator.ensure_obfuscation_validity(
-            source, sections, 1, deobfuscate)
+            source, sections, 1, deobfuscate, {tag_name: tag_name})
       then
-        raise ObfuscationInvalidityError.new "#{error_body}<!--\n#{
-            Haml::Helpers.html_escape Hash(tag_name: tag_name).to_yaml}\n-->"
+        raise ObfuscationInvalidityError.new "#{error_body}"
     end
     obfuscated = DocumentObfuscator.join_sections sections
     obfuscated

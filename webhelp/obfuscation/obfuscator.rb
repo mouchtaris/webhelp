@@ -8,7 +8,7 @@ class Obfuscator
 
   StringCatcher   = /(")([\w\s\d#{%w[. # ~ : >].map(&Regexp.method(:escape)).join}]+)\1/
   HexColorCatcher = /^\h{6}|\h{3}$/
-  HtmlNameCatcher = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>\w+)(\k<strdelim>?)/
+  HtmlNameCatcher = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
@@ -109,16 +109,23 @@ class Obfuscator
     str.gsub HtmlNameCatcher do
       begin
         discriminator = $~[:discriminator]
-        id            = $~[:id]
+        ids_str       = $~[:id]
+        assign        = $~[:assign]
+        strdelim      = $~[:strdelim]
+        ids           = ids_str.split(/\s+/)
         manager       = case discriminator.to_s.downcase
                           when 'class' then @classes
                           when 'id', 'for' then @ids
                           else raise "How? #{discriminator.inspect}"
                         end
-        mapping       = operation.unbound_call manager, id
-        "#{discriminator}#{$~[:assign]}#{mapping}#{$~[:strdelim]}"
-      rescue => e
-        raise "Error for #{discriminator}#{id}: #{e}"
+        mappings      = ids.map do |id|
+                          begin
+                            operation.unbound_call manager, id
+                          rescue => e
+                            raise "Error for #{discriminator} #{id.inspect}: #{e}"
+                          end
+                        end
+        "#{discriminator}#{assign}#{mappings.join ' '}#{strdelim}"
       end
     end
   end
@@ -126,7 +133,7 @@ class Obfuscator
   def build_css_regex
     @css_regex =
     if not @ids.empty? or not @classes.empty? then
-      %r,#{
+      %r,(#{
         (
           @ids.each_id.
             map do |id| Regexp.escape "##{id}" end.
@@ -136,14 +143,14 @@ class Obfuscator
             rsort_by(&:length)
         ).
         join '|'
-        },
+        })(?!\w),
     end
   end
 
   def build_reverse_css_regex
     @css_regex =
     if not @ids.empty? or not @classes.empty? then
-      %r,#{
+      %r,(#{
         (
           @ids.each.
             map do |id, mapping| Regexp.escape "##{mapping}" end.
@@ -152,9 +159,8 @@ class Obfuscator
             map do |id, mapping| Regexp.escape ".#{mapping}" end.
             rsort_by(&:length)
         ).
-        map do |r| /#{r}(?![\w\d])/ end.
         join '|'
-        },
+        })(?!\w),
     end
   end
 
