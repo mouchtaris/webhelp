@@ -4,7 +4,7 @@ module HamlHelpers
 module Js
   extend Util::InstanceRequirementsChecker
 
-  InstanceRequirements = %i[ config ]
+  InstanceRequirements = %i[ config jsimportcache ]
 
   # File name of the opal source in the public dir
   Opal      = 'opal.js'
@@ -40,7 +40,7 @@ module Js
     end#module Development
 
     module Test
-      def __js_import ids, minify
+      def __generate ids, custom, minify
         source =
             ids.map do |id|
               source_basename = Js.const_get id
@@ -48,9 +48,19 @@ module Js
               source_pathname.read
             end.
             join
-        source += yield if block_given?
+        source += custom if custom
         source = Webhelp::Minify::Javascript.minify source if minify
-        "<script>#{source}</script>"
+        source
+      end
+
+      def __cache ids, custom, minify
+        key = minify.to_s + ids.map(&:to_s).join + custom.to_s
+        jsimportcache[key] ||= __generate ids, custom, minify
+      end
+
+      def __js_import ids, minify
+        custom = if block_given? then yield end
+        "<script>#{__cache ids, custom, minify}</script>"
       end
 
       def js_import *ids
