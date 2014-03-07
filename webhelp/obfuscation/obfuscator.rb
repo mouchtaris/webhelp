@@ -6,9 +6,22 @@ module Obfuscation
 #
 class Obfuscator
 
-  StringCatcher   = /(")([\w\s\d#{%w[. # ~ : >].map(&Regexp.method(:escape)).join}]+)\1/
-  HexColorCatcher = /^\h{6}|\h{3}$/
-  HtmlNameCatcher = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
+  module Regexps
+    CssSelector     = /[\w #.>:~]+/
+    ToggleClass     = %r,(?<pre>\$toggle_class\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
+    JqSelector      = %r,(?<pre>Element\[["']\$\[\]["']\]\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
+    HtmlName        = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
+  end#namespace Regexps
+
+  module IdPreprocess
+    JqSelector      = lambda do |id| id end
+    ToggleClass     = lambda do |id| id.gsub /^|\s+/, '\&.' end
+  end#namespace IdPreprocess
+
+  module IdPostprocess
+    JqSelector      = lambda do |id| id end
+    ToggleClass     = lambda do |id| id.gsub /(^|\s+)\./, '\1' end
+  end#namespace IdPostprocess
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
@@ -97,16 +110,22 @@ class Obfuscator
 
   def js_obfuscation_operation operation, str
     return str unless @css_regex
-    str.gsub StringCatcher do |match|
-      delim   = $~[1]
-      id      = $~[2]
-      result  = css_obfuscation_operation operation, id
-      %Q,#{delim}#{result}#{delim},
+    %i[ JqSelector ToggleClass ].reduce str do |str, name|
+      regexp    = Regexps.const_get name
+      preproc   = IdPreprocess.const_get name
+      postproc  = IdPostprocess.const_get name
+      str.gsub regexp do |match|
+        pre     = $~[:pre]
+        after   = $~[:after]
+        id      = $~[:id]
+        result  = css_obfuscation_operation operation, preproc.call(id)
+        %Q,#{pre}#{postproc.call result}#{after},
+      end
     end
   end
 
   def html_obfuscation_operation operation, str
-    str.gsub HtmlNameCatcher do
+    str.gsub Regexps::HtmlName do
       begin
         discriminator = $~[:discriminator]
         ids_str       = $~[:id]

@@ -63,8 +63,8 @@ module Js
         "<script>#{__cache ids, custom, minify}</script>"
       end
 
-      def js_import *ids
-        __js_import ids, false
+      def js_import *ids, &block
+        __js_import ids, false, &block
       end
     end#module Test
 
