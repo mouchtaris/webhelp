@@ -129,7 +129,7 @@ class DocumentObfuscator
     @ob = Webhelp::Obfuscation::Obfuscator.new
   end
 
-  def obfuscate source
+  def obfuscate_document source
     ob_html = DocumentObfuscator.
     obfuscate_except_for_tags(tags_names:   [:style, :script]             ,
                               obfuscate:    @ob.method(:obfuscate_html    ),
@@ -142,13 +142,23 @@ class DocumentObfuscator
                               deobfuscate:  @ob.method(:deobfuscate_css   ),
                               source:       ob_html                       ,
                               )
-    ob_html_css_js = DocumentObfuscator.
-    obfuscate_only_tag(       tag_name:     :script                       ,
-                              obfuscate:    @ob.method(:obfuscate_js      ),
-                              deobfuscate:  @ob.method(:deobfuscate_js    ),
-                              source:       ob_html_css                   ,
+    ob_html_css
+  end
+
+  def obfuscate_opal source
+    ob_ids  = DocumentObfuscator.
+    obfuscate_only_tag(       tag_name:     :obfuscate_id                     ,
+                              obfuscate:    @ob.method(:obfuscate_opal_ids    ),
+                              deobfuscate:  @ob.method(:deobfuscate_opal_ids  ),
+                              source:       source                            ,
                               )
-    ob_html_css_js
+    ob_ids_classes = DocumentObfuscator.
+    obfuscate_only_tag(       tag_name:     :obfuscate_class                      ,
+                              obfuscate:    @ob.method(:obfuscate_opal_classes    ),
+                              deobfuscate:  @ob.method(:deobfuscate_opal_classes  ),
+                              source:       ob_ids                                ,
+                              )
+    ob_ids_classes
   end
 
 end#class DocumentObfuscator

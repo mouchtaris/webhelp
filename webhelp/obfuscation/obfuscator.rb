@@ -8,20 +8,9 @@ class Obfuscator
 
   module Regexps
     CssSelector     = /[\w #.>:~]+/
-    ToggleClass     = %r,(?<pre>\$toggle_class\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
-    JqSelector      = %r,(?<pre>Element\[["']\$\[\]["']\]\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
     HtmlName        = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
+    StringLiteral   = /(?<pre>%Q,)(?<id>[^,]+)(?<after>,)/
   end#namespace Regexps
-
-  module IdPreprocess
-    JqSelector      = lambda do |id| id end
-    ToggleClass     = lambda do |id| id.gsub /^|\s+/, '\&.' end
-  end#namespace IdPreprocess
-
-  module IdPostprocess
-    JqSelector      = lambda do |id| id end
-    ToggleClass     = lambda do |id| id.gsub /(^|\s+)\./, '\1' end
-  end#namespace IdPostprocess
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
@@ -65,22 +54,52 @@ class Obfuscator
     html_obfuscation_operation OpRGet, str
   end
 
-  # Obfuscate the CSS class and ID selectors found
-  # in literal strings in _str_.
-  # @param str [String] a plain string
-  # @return [String] the obfuscated string
-  def obfuscate_js str
-    build_css_regex
-    js_obfuscation_operation OpGet, str
+  # Obfuscate all class and id string constants found
+  # in an Opal (ruby) script.
+  #
+  # Only the parts in <obfuscate_class> and <obfuscate_id>
+  # are substituted, and only literal strings defined
+  # by the %Q,, syntax (commas as delimiters).
+  #
+  # @param str [String] obfuscation block
+  # @param obfuscationType [:class, ;id] obfuscate class
+  #     names or ID names
+  # @return [String] same piece of code with string
+  #     literal values obfuscated
+  def obfuscate_opal str, obfuscation_type
+    opal_obfuscation_operation obfuscation_type, OpGet, str
   end
 
-  # De-obfuscate all CSS class and ID selectors
-  # found in literal strings in _str_.
-  # @param str [String] an obfuscated string
-  # @return [String] the de-obfuscated result
-  def deobfuscate_js str
-    build_reverse_css_regex
-    js_obfuscation_operation OpRGet, str
+  # Deobfuscate all class and id string constants found
+  # in an Opal (ruby) script.
+  #
+  # Only the parts in <obfuscate_class> and <obfuscate_id>
+  # are substituted, and only literal strings defined
+  # by the %Q,, syntax (commas as delimiters).
+  #
+  # @param str [String] deobfuscation block
+  # @param obfuscationType [:class, ;id] deobfuscate class
+  #     names or ID names
+  # @return [String] same piece of code with string
+  #     literal values deobfuscated
+  def deobfuscate_opal str, obfuscation_type
+    opal_obfuscation_operation obfuscation_type, OpRGet, str
+  end
+
+  def obfuscate_opal_classes str
+    obfuscate_opal str, :class
+  end
+
+  def obfuscate_opal_ids str
+    obfuscate_opal str, :id
+  end
+
+  def deobfuscate_opal_classes str
+    deobfuscate_opal str, :class
+  end
+
+  def deobfuscate_opal_ids str
+    deobfuscate_opal str, :id
   end
 
   def each_id_mapping &block
@@ -108,19 +127,17 @@ class Obfuscator
     end
   end
 
-  def js_obfuscation_operation operation, str
-    return str unless @css_regex
-    %i[ JqSelector ToggleClass ].reduce str do |str, name|
-      regexp    = Regexps.const_get name
-      preproc   = IdPreprocess.const_get name
-      postproc  = IdPostprocess.const_get name
-      str.gsub regexp do |match|
-        pre     = $~[:pre]
-        after   = $~[:after]
-        id      = $~[:id]
-        result  = css_obfuscation_operation operation, preproc.call(id)
-        %Q,#{pre}#{postproc.call result}#{after},
-      end
+  def opal_obfuscation_operation obfuscation_type, operation, str
+    manager = case obfuscation_type
+                when :class then @classes
+                when :id then @ids
+                else raise ArgumentError.new "Invalid obfuscation_type #{obfuscation_type.inspect}"
+              end
+    str.gsub Regexps::StringLiteral do
+      pre   = $~[:pre]
+      id    = $~[:id]
+      after = $~[:after]
+      "#{pre}#{operation.unbound_call manager, id}#{after}"
     end
   end
 
