@@ -11,6 +11,7 @@ class Obfuscator
     JqSelector      = %r,(?<pre>Element\[["']\$\[\]["']\]\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
     ConstDefinition = %r{(?<pre>\.cdecl\s*\([$\w]+,\s*(?<q>["'])C_(?<type>class|id)_name_\d{6}(\k<q>),\s*(?<q2>["']))(?<id>\w+)(?<after>(\k<q2>)\s*\))}
     HtmlName        = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
+    HtmlAnchor      = %r`(?<pre>\<\s*a[\w\s="']+href\s*\=\s*(?<q>["']).*?#)(?<id>\w+)(?<after>(\k<q>))`
   end#namespace Regexps
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
@@ -44,7 +45,7 @@ class Obfuscator
   # obfuscate them.
   # @return [String] the obfuscated string
   def obfuscate_html str
-    html_obfuscation_operation(OpReg, str)
+    html_obfuscation_operation OpReg, str
   end
 
   # Deobfuscate class and ID names with their original
@@ -123,26 +124,30 @@ class Obfuscator
 
   def html_obfuscation_operation operation, str
     str.gsub Regexps::HtmlName do
-      begin
-        discriminator = $~[:discriminator]
-        ids_str       = $~[:id]
-        assign        = $~[:assign]
-        strdelim      = $~[:strdelim]
-        ids           = ids_str.split(/\s+/)
-        manager       = case discriminator.to_s.downcase
-                          when 'class' then @classes
-                          when 'id', 'for' then @ids
-                          else raise "How? #{discriminator.inspect}"
+      discriminator = $~[:discriminator]
+      ids_str       = $~[:id]
+      assign        = $~[:assign]
+      strdelim      = $~[:strdelim]
+      ids           = ids_str.split(/\s+/)
+      manager       = case discriminator.to_s.downcase
+                        when 'class' then @classes
+                        when 'id', 'for' then @ids
+                        else raise "How? #{discriminator.inspect}"
+                      end
+      mappings      = ids.map do |id|
+                        begin
+                          res = operation.unbound_call manager, id
+                        rescue => e
+                          raise "Error for #{discriminator} #{id.inspect}: #{e}"
                         end
-        mappings      = ids.map do |id|
-                          begin
-                            operation.unbound_call manager, id
-                          rescue => e
-                            raise "Error for #{discriminator} #{id.inspect}: #{e}"
-                          end
-                        end
-        "#{discriminator}#{assign}#{mappings.join ' '}#{strdelim}"
-      end
+                      end
+      "#{discriminator}#{assign}#{mappings.join ' '}#{strdelim}"
+    end.gsub Regexps::HtmlAnchor do
+      pre     = $~[:pre   ]
+      after   = $~[:after ]
+      id      = $~[:id    ]
+      result  = operation.unbound_call @ids, id
+      %Q~#{pre}#{result}#{after}~
     end
   end
 
