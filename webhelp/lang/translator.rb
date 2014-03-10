@@ -32,7 +32,8 @@ class Translator
     use_lang = lang || @lang
     language_translations = @db[use_lang]
     raise TranslatorError.new "No such laguage: #{lang.inspect}" unless language_translations
-    case result = language_translations[id]
+    key = id.to_s
+    case result = language_translations[key]
       when Array then
         method_name = result.first.to_sym
         method = method method_name
