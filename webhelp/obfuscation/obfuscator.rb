@@ -8,20 +8,10 @@ class Obfuscator
 
   module Regexps
     CssSelector     = /[\w #.>:~]+/
-    ToggleClass     = %r,(?<pre>\$toggle_class\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
     JqSelector      = %r,(?<pre>Element\[["']\$\[\]["']\]\s*\((?<q>["']))(?<id>#{CssSelector})(?<after>(\k<q>)\)),
+    ConstDefinition = %r{(?<pre>\.cdecl\s*\([$\w]+,\s*(?<q>["'])C_(?<type>class|id)_name_\d{6}(\k<q>),\s*(?<q2>["']))(?<id>\w+)(?<after>(\k<q2>)\s*\))}
     HtmlName        = /(?<discriminator>class|id|for)(?<assign>\s*\=\s*(?<strdelim>["']?))(?<id>[\w ]+)(\k<strdelim>?)/
   end#namespace Regexps
-
-  module IdPreprocess
-    JqSelector      = lambda do |id| id end
-    ToggleClass     = lambda do |id| id.gsub /^|\s+/, '\&.' end
-  end#namespace IdPreprocess
-
-  module IdPostprocess
-    JqSelector      = lambda do |id| id end
-    ToggleClass     = lambda do |id| id.gsub /(^|\s+)\./, '\1' end
-  end#namespace IdPostprocess
 
   OpReg   = Webhelp::IdManager.public_instance_method :[]
   OpGet   = Webhelp::IdManager.public_instance_method :get
@@ -110,17 +100,24 @@ class Obfuscator
 
   def js_obfuscation_operation operation, str
     return str unless @css_regex
-    %i[ JqSelector ToggleClass ].reduce str do |str, name|
-      regexp    = Regexps.const_get name
-      preproc   = IdPreprocess.const_get name
-      postproc  = IdPostprocess.const_get name
-      str.gsub regexp do |match|
-        pre     = $~[:pre]
-        after   = $~[:after]
-        id      = $~[:id]
-        result  = css_obfuscation_operation operation, preproc.call(id)
-        %Q,#{pre}#{postproc.call result}#{after},
-      end
+    str.gsub Regexps::JqSelector do
+      pre     = $~[:pre   ]
+      after   = $~[:after ]
+      id      = $~[:id    ]
+      result  = css_obfuscation_operation operation, id
+      %Q,#{pre}#{result}#{after},
+    end.gsub Regexps::ConstDefinition do
+      pre     = $~[:pre   ]
+      after   = $~[:after ]
+      id      = $~[:id    ]
+      type    = $~[:type  ]
+      manager = case type
+                  when 'class' then @classes
+                  when 'id' then @ids
+                  else raise "Invaild name-type #{type.inspect}"
+                end
+      result  = operation.unbound_call manager, id
+      %Q.#{pre}#{result}#{after}.
     end
   end
 
