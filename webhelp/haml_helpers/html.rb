@@ -15,7 +15,7 @@ module Html
   end
 
   def __element img_id, id, width, height, offset_x, offset_y
-    result = [(id or imageidmanager.next!)]
+    result = [(id or "#{img_id}_#{imageidmanager.next!}")]
     if spritemanager.sprite? img_id then
       result.concat [
         (width    or   spritemanager.width    img_id  ),
