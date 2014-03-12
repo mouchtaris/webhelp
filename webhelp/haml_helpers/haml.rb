@@ -20,11 +20,11 @@ module Haml
   #
   # @param id [Symbol] basename of the files to process
   # @return [String] the haml process result
-  def haml2 id
+  def haml2 id, &block
     head_id = :"#{id}_head"
     # pre-process (running this generates info needed for
     # header generation)
-    body = haml id
+    body = haml id, &block
     haml head_id do body end
   end
 
