@@ -44,7 +44,7 @@ module Html
       # @param id [Symbol?] the html id of the generated
       #   html element
       def img img_id, id: nil, width: nil, height: nil, position: nil, attrs: {},
-          with_hover: nil, offset_x: nil, offset_y: nil
+          with_hover: nil, offset_x: nil, offset_y: nil, element_name: 'div'
         ### TODO make params signature and reuse same element id for identical requests
         rc_id       = __rc_id img_id
         url         = rcmapper.translate rc_id
@@ -60,7 +60,7 @@ module Html
         htmlimg.img attrs, id: eid, url: url, width: ew, height: eh, position: position,
                     with_hover_url: hover_url, offset_x: eoffx, offset_y: eoffy,
                     hover_width: hw, hover_height: hh, hover_offset_x: hoffx,
-                    hover_offset_y: hoffy
+                    hover_offset_y: hoffy, element_name: element_name
       end
 
     end
@@ -73,12 +73,14 @@ module Html
       # "image" element in case the image rc is not found.
       #
       def img img_id, id: nil, width: nil, height: nil, position: nil, attrs: {},
-          with_hover: nil, offset_x: nil, offset_y: nil
+          with_hover: nil, offset_x: nil, offset_y: nil, element_name: 'div'
         __img__default img_id, id: id, width: width, height: height, position: position,
-            with_hover: with_hover, attrs: attrs, offset_y: offset_y, offset_x: offset_x
+            with_hover: with_hover, attrs: attrs, offset_y: offset_y, offset_x: offset_x,
+            element_name: element_name
       rescue IndexError => e # rc not found
         element_id, element_width, element_height = __element img_id, id, width, height, nil, nil
-        htmlimg.generate element_id, element_width, element_height, attrs: attrs, text: e
+        htmlimg.generate element_id, element_width, element_height, attrs: attrs, text: e,
+            element_name: element_name
       end
 
     end

@@ -130,7 +130,7 @@ class Image
   # @return [String] an html piece of code with the
   #     generated element
   def img(attrs = {},
-    id:, url:, width:, height:, position:,
+    id:, url:, width:, height:, position:, element_name:,
     offset_x: nil, offset_y: nil,
     with_hover_url: nil, hover_selector_prefix: nil,
     hover_width: nil, hover_height: nil,
@@ -157,7 +157,7 @@ class Image
   #     get_morecss[imgid] << "@include #{extra_mixin}"
   #   end
   # end
-    haml_code = "#{imgid}.#{CssRulespace::Image}#{common_class}{attrs}"
+    haml_code = "%#{element_name}#{imgid}.#{CssRulespace::Image}#{common_class}{attrs}"
     @hamler.haml haml_code, scope: Struct.new(:attrs).new(attrs)
   end
 
