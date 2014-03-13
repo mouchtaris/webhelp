@@ -9,6 +9,9 @@ class Javascript
       u.close_write
       u.read
     end
+  rescue => e
+    STDERR.puts "[JSMIN] #{e}"
+    source
   end
 
 end#class Javascript

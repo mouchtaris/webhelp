@@ -7,6 +7,7 @@ class Gen2
 
   def initialize
     clear_morecss
+    clear_preload
   end
 
   # @param selector [Symbol] the css selector (literally)
@@ -22,21 +23,32 @@ class Gen2
       end
       _morecss_add selector, rules;
     else
-      @gen2_morecss.deep_dup.freeze
+      @morecss.deep_dup.deep_freeze
     end
   end
 
   def clear_morecss
-    @gen2_morecss = {}
+    @morecss = {}
   end
 
+  def preload url = nil
+    if url then
+      @preload[url] = nil
+    else
+      @preload.dup.deep_freeze
+    end
+  end
+
+  def clear_preload
+    @preload = {}
+  end
 
   private
 
   # Create a new entry for the given selector
   # only if it does not exist.
   def _morecss_add selector, rules
-    @gen2_morecss[selector] ||=
+    @morecss[selector] ||=
     rules.map do |name, value|
       [name.downcase, value]
     end.
@@ -46,7 +58,7 @@ class Gen2
   # Append all rules to any existing or not
   # selector rule-set.
   def _morecss_append selector, rules
-    @gen2_morecss[selector] ||= all_rules = {}
+    @morecss[selector] ||= all_rules = {}
     rules.each do |name, value|
       name = name.downcase
       all_rules[name] = value
