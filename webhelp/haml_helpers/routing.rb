@@ -10,7 +10,9 @@ module Routing
       path = Pathname addr
       URI(if path.absolute? then
             this_path = Pathname request.path_info
-            path.relative_path_from this_path.dirname
+            is_directory = this_path.to_s.end_with? '/'
+            this_dir = if is_directory then this_path else this_path.dirname end
+            path.relative_path_from this_dir
           else
             path
           end.to_s)
