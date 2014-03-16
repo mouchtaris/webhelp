@@ -54,7 +54,9 @@ class Image
     commons_css = nil
     commons_key = nil
     if url and width and height then
-      commons_key = :".sprite_commons_#{Digest::SHA512.new.hexdigest "#{Digest::SHA512.new.hexdigest url}_#{width}x#{height}"}"
+      url_sig = Digest::SHA512.new.hexdigest url.to_s
+      img_sig = Digest::SHA512.new.hexdigest "#{url_sig}_#{width}x#{height}"
+      commons_key = :".sprite_commons_#{img_sig}"
       commons_css = _common_css_for_image_class url, width, height
     end
 

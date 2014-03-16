@@ -33,7 +33,7 @@ class Gen2
 
   def preload url = nil
     if url then
-      @preload[url] = nil
+      @preload[url.to_s] = nil
     else
       @preload.dup.deep_freeze
     end

@@ -25,6 +25,12 @@ module WrapperBase
     translate_impl name or translate_next name
   end
 
+  def has? name
+    translate name and true
+  rescue ::IndexError
+    false
+  end
+
   # By-pass all wrappers (including this one) and map _name_
   # using the original, wrapped mapper.
   #

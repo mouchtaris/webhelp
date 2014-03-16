@@ -47,7 +47,7 @@ module Html
           with_hover: nil, offset_x: nil, offset_y: nil, element_name: 'div'
         ### TODO make params signature and reuse same element id for identical requests
         rc_id       = __rc_id img_id
-        url         = rcmapper.translate rc_id
+        url         = to rcmapper.translate rc_id
         eid, ew, eh, eoffx, eoffy = __element img_id, id, width, height, offset_x, offset_y
 
         hw, hh, hoffx, hoffy = nil
