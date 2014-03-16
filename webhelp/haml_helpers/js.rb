@@ -6,75 +6,49 @@ module Js
 
   InstanceRequirements = %i[ config jsimportcache ]
 
-  # File name of the opal source in the public dir
-  Opal      = 'opal.js'
-  # File name of the minified/obfuscated opal source
-  # in the public dir
-  OpalMin   = 'opal-min.js'
-  # File name of the j-query source in the public dir
-  JQuery    = 'jquery.js'
-  # File name of the minified j-query source in the
-  # public dir
-  JQueryMin = 'jquery-min.js'
+  # Basename of the opal source in the public dir
+  Opal      = 'opal'
+  # Basename of the j-query source in the public dir
+  JQuery    = 'jquery'
+
+  def __js_import urls
+    js_srcs = urls.map do |url|
+                escaped_url = url.gsub '|', '\|'
+                absolute_url = "/#{escaped_url}"
+                "%script{src: %Q|#{to absolute_url}|}"
+              end.
+              join "\n"
+    literal_lines = (yield.each_line.map(&'  '.method(:+)).join if block_given?)
+    literal_lines = nil if literal_lines && literal_lines.gsub(/\s+/, '').empty?
+    haml_code = "#{js_srcs}\n"
+    haml_code += ":javascript\n#{literal_lines}\n" if literal_lines
+    haml haml_code
+  end
 
   module Environments
 
     module Development
-      def js_import *ids
-        js_srcs =
-            ids.map do |id|
-              src = Js.const_get(id).gsub '|', '\|'
-              "%script{src: %Q|/#{src}|}"
-            end.
-            join "\n"
-        literal_lines =
-            if block_given? then
-              yield.
-                  each_line.
-                  to_a.
-                  map(&'  '.method(:+)).
-                  join
-            end
-        haml "#{js_srcs}\n:javascript\n#{literal_lines}"
-      end
-    end#module Development
 
-    module Test
-      def __generate ids, custom, minify
-        source =
-            ids.map do |id|
-              source_basename = Js.const_get id
-              source_pathname = config.public_dir + source_basename
-              source_pathname.read
-            end.
-            join
-        source += custom if custom
-        source = Webhelp::Minify::Javascript.minify source if minify
-        source
-      end
-
-      def __cache ids, custom, minify
-        key = minify.to_s + ids.map(&:to_s).join + custom.to_s
-        jsimportcache[key] ||= __generate ids, custom, minify
-      end
-
-      def __js_import ids, minify
-        custom = if block_given? then yield end
-        "<script>#{__cache ids, custom, minify}</script>"
-      end
-
-      def js_import *ids, &block
-        __js_import ids, false, &block
-      end
-    end#module Test
-
-    module Default
-      include Test
       # @param ids [:Opal, :JQuery]
       #
       def js_import *ids, &block
-        __js_import ids.map { |id| :"#{id}Min" }, true, &block
+        __js_import ids.map { |id| "#{Js.const_get id}.js" }, &block
       end
+
+    end#module Development
+
+    module Default
+
+      # @param ids [:Opal, :JQuery]
+      #
+      def js_import *ids
+        __js_import ids.map { |id| "#{Js.const_get id}-min.js" } do
+          if block_given? and custom = yield then
+            jsimportcache[custom] ||= Webhelp::Minify::Javascript.minify custom
+          end
+        end
+      end
+
     end#module Default
 
   end#module Environments
