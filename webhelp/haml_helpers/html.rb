@@ -45,7 +45,6 @@ module Html
       #   html element
       def img img_id, id: nil, width: nil, height: nil, position: nil, attrs: {},
           with_hover: nil, offset_x: nil, offset_y: nil, element_name: 'div'
-        ### TODO make params signature and reuse same element id for identical requests
         rc_id       = __rc_id img_id
         url         = to rcmapper.translate rc_id
         eid, ew, eh, eoffx, eoffy = __element img_id, id, width, height, offset_x, offset_y
@@ -54,7 +53,7 @@ module Html
         hover_url = nil
         if (h_img_id = with_hover && :"#{img_id}_hover") then
           hover_rc_id = __hover_rc_id img_id
-          hover_url   = rcmapper.translate hover_rc_id
+          hover_url   = to rcmapper.translate hover_rc_id
           _, hw, hh, hoffx, hoffy = __element h_img_id, eid, nil, nil, nil, nil
         end
         htmlimg.img attrs, id: eid, url: url, width: ew, height: eh, position: position,
