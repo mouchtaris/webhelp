@@ -26,6 +26,15 @@ class WualaLocal
     @sig_to_url_db[signature]
   end
 
+  def local_path_from_url url
+    sig = WualaLocal.get_signature url
+    local_path sig if sig
+  end
+
+  def self.get_signature url
+    md = /\/(?<sig>\h+)\.\w+$/.match url.to_s
+    md[:sig] if md
+  end
 
   private
 

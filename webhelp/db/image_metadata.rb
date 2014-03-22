@@ -64,6 +64,16 @@ class ImageMetadata
   rescue ImageMetadataException
   end
 
+  def portrait? name
+    w, h = size name
+    w < h
+  end
+
+  def landscape? name
+    w, h = size name
+    h < w
+  end
+
   private
   def signature_for name
     @sha.hexdigest name.to_s
