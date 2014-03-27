@@ -35,11 +35,15 @@ class Translator
     key = id.to_s
     case result = language_translations[key]
       when Array then
-        method_name = result.first.to_sym
-        method = method method_name
-        method.call *result[1..-1]
+        begin
+          method_name = result.first.to_sym
+          method = method method_name
+          method.call *result[1..-1]
+        rescue TranslatorError => e
+          raise TranslatorError.new "#{use_lang}[#{key}] failed because of: #{e}"
+        end
       when String then result
-      else raise TranslatorError.new "Invalid translation: #{result.inspect}"
+      else raise TranslatorError.new "Invalid translation: #{result.inspect} for #{use_lang}[#{key}]"
     end
   end
 
