@@ -8,6 +8,7 @@ class Gen2
   def initialize
     clear_morecss
     clear_preload
+    clear_vselections
   end
 
   # @param selector [Symbol] the css selector (literally)
@@ -41,6 +42,20 @@ class Gen2
 
   def clear_preload
     @preload = {}
+  end
+
+  def vselection id
+    require_symbol{:id}
+    raise ArgumentError.new "#{id} is already registered" if @vselections[id]
+    @vselections[id] = true
+  end
+
+  def vselections
+    @vselections.deep_dup.deep_freeze
+  end
+
+  def clear_vselections
+    @vselections = {}
   end
 
   private
