@@ -44,10 +44,10 @@ class Gen2
     @preload = {}
   end
 
-  def vselection id
+  def vselection id, klass = nil
     require_symbol{:id}
     raise ArgumentError.new "#{id} is already registered" if @vselections[id]
-    @vselections[id] = true
+    @vselections[id] = klass
   end
 
   def vselections
