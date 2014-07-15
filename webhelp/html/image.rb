@@ -168,7 +168,7 @@ class Image
   #
   # @param width [Fixnum?]
   # @param height [Fixnum?]
-  def generate id, width = nil, height = nil, attrs: {}, text: nil
+  def generate id, width = nil, height = nil, attrs: {}, text: nil, element_name: nil
     imgid = :"##{::Haml::Helpers.html_escape id}"
     add_common_css_for_images
     assoc_css = []
@@ -176,7 +176,7 @@ class Image
     assoc_css << %W[ height #{height}px ] if height
     assoc_css << ['background', 'radial-gradient(ellipse at center, #cb60b3 0%, #ad1283 50%, #de47ac 100%)']
     @gen2.morecss imgid, assoc_css
-    haml_code = "#{imgid}.#{CssRulespace::Image}{attrs}"
+    haml_code = "#{element_name}#{imgid}.#{CssRulespace::Image}{attrs}"
     haml_code += "\\ #{text}" if text
     @hamler.haml haml_code, scope: Struct.new(:attrs).new(attrs)
   end
